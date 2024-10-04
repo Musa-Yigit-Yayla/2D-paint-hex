@@ -44,6 +44,23 @@ export class Hexagon{
             `,
             
     }
+    static WORLD_SIDE_LENGTH = 10; //px in world coordinates
+    static SIDE_LENGTH = this.WORLD_SIDE_LENGTH / 400.0; //in clipspace coordinates
+    static VERT_POS = [
+        0, 0, //p1
+        0 - Hexagon.SIDE_LENGTH, 0, //p2
+        0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
+        0, 0, //p1
+        0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
+        0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p4
+        0, 0, //p1
+        0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p4
+        0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p5
+        0, 0, //p1
+        0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p5
+        0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH,
+    ]
+
     static program = null;
     static programStroke = null;
     static posBuffer = null;
@@ -51,7 +68,7 @@ export class Hexagon{
     static strokePosBuffer = null;
     
 
-    topRightVert;
+    topRightVert = {x, y}; //in worldspace coords
     color = {r: 1.0, g: 1.0, b: 1.0};
     strokeEnabled = true;
 
@@ -66,7 +83,17 @@ export class Hexagon{
 
     render(gl){
         //first render the interior
+        gl.useProgram(Hexagon.program);
+
+        gl.bindBuffer(Hexagon.posBuffer, gl.ARRAY_BUFFER);
+
+
     }
+
+    translateCoords(){
+        
+    }
+
     static initProgram(gl){
         Hexagon.program = gl.createProgram();
         Hexagon.programStroke = gl.createProgram();
