@@ -6,7 +6,6 @@ export class Hexagon{
             `#version 300 es
             
             in vec2 vertPos;
-            uniform vec3 color; //uniform because a grid will have a single color
 
             void main(){
                 gl_Position = vec4(vertPos, 0.0, 1.0); //later pass an attribute for z as well for layering
@@ -16,6 +15,7 @@ export class Hexagon{
             precision mediump float;
 
             out vec4 outColor;
+            uniform vec3 color; //uniform because a grid will have a single color
 
             void main(){
                 outColor = vec4(color, 1.0);
@@ -35,7 +35,7 @@ export class Hexagon{
             `#version 300 es
             precision mediump float;
 
-            const vec3 strokeColor = vec(0.0, 0.0, 0.0);
+            const vec3 strokeColor = vec3(0.0, 0.0, 0.0);
             out vec4 outColor;
             void main(){
                 outColor = vec4(strokeColor, 1.0);
@@ -65,14 +65,13 @@ export class Hexagon{
     static program = null;
     static programStroke = null;
     static posBuffer = null;
-    static colorBuffer = null;
     static strokePosBuffer = null;
 
     static CANVAS_W;
     static CANVAS_H; //canvas attributes, must be passed from app
     
 
-    topRightVert = {x, y}; //in worldspace coords
+    topRightVert = {x: 0, y: 0}; //in worldspace coords
     color = {r: 1.0, g: 1.0, b: 1.0};
     strokeEnabled = true;
 
@@ -92,7 +91,7 @@ export class Hexagon{
         //fetch the clipspace coordinates
         let clipCoords = [];
         for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
-            let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
+            let x = Hexagon.VERT_POS[i] + this.topRightVert.x, y = Hexagon.VERT_POS[i + 1] + this.topRightVert.y;
             let clipCoord = this.translateCoords(x, y);
 
             clipCoords.push(clipCoord);
@@ -107,25 +106,29 @@ export class Hexagon{
         gl.enableVertexAttribArray(vertPosLoc); //enable GLSL attribute location
         gl.vertexAttribPointer(vertPosLoc, 2, gl.FLOAT, false, 0, 0);
 
-        //now also pass the fill color
-        let colorArr = new Float32Array([color.r, color.g, color.b]);
+        //now also pass the fill color as uniform3fv
+        let colorArr = new Float32Array([this.color.r, this.color.g, this.color.b]);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.colorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STATIC_DRAW);
-
-        let colorLoc = gl.getAttribLocation(Hexagon.program, 'color');
-        gl.enableVertexAttribArray(colorLoc);
-        gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+        let colorLoc = gl.getUniformLocation(Hexagon.program, 'color');
+        gl.uniform3fv(colorLoc, colorArr);
 
         const vertexCount = 6
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
 
         if(this.strokeEnabled){
             gl.useProgram(Hexagon.programStroke);
 
+            let strokeCoords = this.getStrokeCoords();
+
             //we will draw in line loop
             gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
-            gl.bufferData(gl.ARRAY_BUFFER, )
+            gl.bufferData(gl.ARRAY_BUFFER, strokeCoords, gl.STATIC_DRAW);
+
+            let strokeVertLoc = gl.getAttribLocation(Hexagon.program, 'vertPos');
+            gl.enableVertexAttribArray(strokeVertLoc);
+            gl.vertexAttribPointer(strokeVertLoc, 2, gl.FLOAT, false, 0, 0);
+
+            gl.drawArrays(gl.LINE_LOOP, 0, 6);
         }
     }
 
@@ -150,16 +153,16 @@ export class Hexagon{
      * @param {*} x 
      * @param {*} y world coords
      * 
-     * @return array of stroke coordinates by applying given world coord translation
+     * @return array of stroke coordinates by applying current world coord translation
      */
-    static getStrokeCoords(x, y){
+    getStrokeCoords(x, y){
         let result = [];
 
         for(let i = 0; i < Hexagon.LINE_INDEXES.length; i++){
-            let currX = Hexagon.VERT_POS[2 * i];
-            let currY = Hexagon.VERT_POS[2 * i + 1];
+            let currX = Hexagon.VERT_POS[2 * i] + this.topRightVert.x;
+            let currY = Hexagon.VERT_POS[2 * i + 1] + this.topRightVert.y;
 
-            result.push(translateCoords(currX, currY)); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
+            result.push(this.translateCoords(currX, currY)); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
         }
         return result;
     }
@@ -171,7 +174,6 @@ export class Hexagon{
         Hexagon.program = gl.createProgram();
         Hexagon.programStroke = gl.createProgram();
         Hexagon.posBuffer = gl.createBuffer();
-        Hexagon.colorBuffer = gl.createBuffer();
         Hexagon.strokePosBuffer = gl.createBuffer();
 
         //init shaders then link and compile program
@@ -205,8 +207,8 @@ export class Hexagon{
         let strokeVS = gl.createShader(gl.VERTEX_SHADER);
         let strokeFS = gl.createShader(gl.FRAGMENT_SHADER);
 
-        gl.shaderSource(strokeVS, strokeShaders.vs);
-        gl.shaderSource(strokeFS, strokeShaders.fs);
+        gl.shaderSource(strokeVS, Hexagon.strokeShaders.vs);
+        gl.shaderSource(strokeFS, Hexagon.strokeShaders.fs);
 
         gl.compileShader(strokeVS);
         gl.compileShader(strokeFS);
@@ -217,6 +219,9 @@ export class Hexagon{
         if (!gl.getShaderParameter(strokeFS, gl.COMPILE_STATUS)) {
             console.error("Hexagon Stroke Fragment Shader Error: " + gl.getShaderInfoLog(strokeFS));
         }
+
+        gl.attachShader(Hexagon.programStroke, strokeVS);
+        gl.attachShader(Hexagon.programStroke, strokeFS);
 
         gl.linkProgram(Hexagon.programStroke);
 
