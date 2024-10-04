@@ -45,7 +45,7 @@ export class Hexagon{
             
     }
     static WORLD_SIDE_LENGTH = 10; //px in world coordinates
-    static SIDE_LENGTH = this.WORLD_SIDE_LENGTH / 400.0; //in clipspace coordinates
+    static SIDE_LENGTH = this.WORLD_SIDE_LENGTH / 400.0; //in clipspace coordinates (this is also clipspace world ratio)
     static VERT_POS = [
         0, 0, //p1
         0 - Hexagon.SIDE_LENGTH, 0, //p2
@@ -66,6 +66,9 @@ export class Hexagon{
     static posBuffer = null;
     static colorBuffer = null;
     static strokePosBuffer = null;
+
+    static CANVAS_W;
+    static CANVAS_H; //canvas attributes, must be passed from app
     
 
     topRightVert = {x, y}; //in worldspace coords
@@ -85,16 +88,60 @@ export class Hexagon{
         //first render the interior
         gl.useProgram(Hexagon.program);
 
-        gl.bindBuffer(Hexagon.posBuffer, gl.ARRAY_BUFFER);
+        //fetch the clipspace coordinates
+        let clipCoords = [];
+        for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
+            let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
+            let clipCoord = this.translateCoords(x, y);
 
+            clipCoords.push(clipCoord);
+        }
 
+        clipCoords = new Float32Array(clipCoords); //flatten
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STATIC_DRAW);
+
+        let vertPosLoc = gl.getAttribLocation(Hexagon.program, 'vertPos');
+        gl.enableVertexAttribArray(vertPosLoc); //enable GLSL attribute location
+        gl.vertexAttribPointer(vertPosLoc, 2, gl.FLOAT, false, 0, 0);
+
+        //now also pass the fill color
+        let colorArr = new Float32Array([color.r, color.g, color.b]);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STATIC_DRAW);
+
+        let colorLoc = gl.getAttribLocation(Hexagon.program, 'color');
+        gl.enableVertexAttribArray(colorLoc);
+        gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+
+        const vertexCount = 6
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        //PROCEED
     }
 
-    translateCoords(){
-        
+    
+
+    /**
+     * @param x
+     * @param y world coords
+     * 
+     * Translates the given world coords returns it in its clipspace position in 2D
+     * @return [cx, cy]
+     */
+    translateCoords(x, y){
+        let cx = (x - Hexagon.CANVAS_W) / this.SIDE_LENGTH; //side length is also clipspace world ratio
+        let cy = (y - Hexagon.CANVAS_H) / this.SIDE_LENGTH;
+
+        return [cx, cy];
     }
 
-    static initProgram(gl){
+    static initProgram(gl, canvasWidth, canvasHeight){
+        Hexagon.CANVAS_W = canvasWidth;
+        Hexagon.CANVAS_H = canvasHeight;
+
         Hexagon.program = gl.createProgram();
         Hexagon.programStroke = gl.createProgram();
         Hexagon.posBuffer = gl.createBuffer();
