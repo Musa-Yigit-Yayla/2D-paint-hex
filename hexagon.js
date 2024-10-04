@@ -44,22 +44,9 @@ export class Hexagon{
             `,
             
     }
-    static WORLD_SIDE_LENGTH = 10; //px in world coordinates
+    static WORLD_SIDE_LENGTH = 20; //px in world coordinates
     static SIDE_LENGTH; //in clipspace coordinates (this is also clipspace world ratio)
-    static VERT_POS = [
-        0, 0, //p1
-        0 - Hexagon.SIDE_LENGTH, 0, //p2
-        0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
-        0, 0, //p1
-        0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
-        0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p4
-        0, 0, //p1
-        0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p4
-        0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p5
-        0, 0, //p1
-        0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p5
-        0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH,
-    ];
+    static VERT_POS;
     static LINE_INDEXES = [0, 1, 3, 4, 8, 11];
 
     static program = null;
@@ -72,7 +59,7 @@ export class Hexagon{
     
 
     topRightVert = {x: 0, y: 0}; //in worldspace coords
-    color = {r: 1.0, g: 1.0, b: 1.0};
+    color = {r: 0, g: 0, b: 0};
     strokeEnabled = true;
 
     /**
@@ -94,10 +81,9 @@ export class Hexagon{
         console.log("Debug: topRightConverted is", topRightConverted);
         for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
 
-            let x = Hexagon.VERT_POS[i] + topRightConverted.x, y = Hexagon.VERT_POS[i + 1] + topRightConverted.y;
-            let clipCoord = this.translateCoords(x, y);
+            let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
 
-            clipCoords.push(clipCoord.x, clipCoord.y);
+            clipCoords.push(x + topRightConverted.x, y + topRightConverted.y);
         }
 
         console.log("Debug: Hexagon.SIDE_LENGTH is ", Hexagon.SIDE_LENGTH);
@@ -148,8 +134,8 @@ export class Hexagon{
      * @return {x: cx, y: cy}
      */
     translateCoords(x, y){
-        let cx = (x - Hexagon.CANVAS_W / 2.0) / Hexagon.SIDE_LENGTH; //side length is also clipspace world ratio
-        let cy = (y - Hexagon.CANVAS_H / 2.0) / Hexagon.SIDE_LENGTH;
+        let cx = (x - Hexagon.CANVAS_W / 2.0) * (2.0 / Hexagon.CANVAS_W); //side length is also clipspace world ratio
+        let cy = -1.0 * (y - Hexagon.CANVAS_H / 2.0) * (2.0 / Hexagon.CANVAS_H);
 
         console.log("Debug: cx and cy are respectively", cx, cy, "where given x and y parameters are", x, y);
         return {x: cx, y: cy};
@@ -184,6 +170,22 @@ export class Hexagon{
         Hexagon.CANVAS_W = canvasWidth;
         Hexagon.CANVAS_H = canvasHeight;
         Hexagon.SIDE_LENGTH = 2.0 * Hexagon.WORLD_SIDE_LENGTH / Hexagon.CANVAS_W;
+
+        //init vertex positions
+        Hexagon.VERT_POS = [
+            0, 0, //p1
+            0 - Hexagon.SIDE_LENGTH, 0, //p2
+            0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
+            0, 0, //p1
+            0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
+            0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p4
+            0, 0, //p1
+            0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p4
+            0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p5
+            0, 0, //p1
+            0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p5
+            0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH,
+        ];
     
         Hexagon.program = gl.createProgram();
         Hexagon.programStroke = gl.createProgram();

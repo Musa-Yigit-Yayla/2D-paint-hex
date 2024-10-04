@@ -7,6 +7,7 @@ let gl = canvas.getContext('webgl2');
 console.log("Debug: canvas width and height are", canvas.width, canvas.height);
 
 Hexagon.initProgram(gl, canvas.width, canvas.height);
+console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 
 let hex = new Hexagon({x: 30, y: 30});
 hex.render(gl);
