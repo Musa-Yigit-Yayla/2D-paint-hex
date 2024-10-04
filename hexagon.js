@@ -45,7 +45,7 @@ export class Hexagon{
             
     }
     static WORLD_SIDE_LENGTH = 10; //px in world coordinates
-    static SIDE_LENGTH = this.WORLD_SIDE_LENGTH / 400.0; //in clipspace coordinates (this is also clipspace world ratio)
+    static SIDE_LENGTH; //in clipspace coordinates (this is also clipspace world ratio)
     static VERT_POS = [
         0, 0, //p1
         0 - Hexagon.SIDE_LENGTH, 0, //p2
@@ -90,14 +90,20 @@ export class Hexagon{
 
         //fetch the clipspace coordinates
         let clipCoords = [];
+        let topRightConverted = this.translateCoords(this.topRightVert.x, this.topRightVert.y);
+        console.log("Debug: topRightConverted is", topRightConverted);
         for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
-            let x = Hexagon.VERT_POS[i] + this.topRightVert.x, y = Hexagon.VERT_POS[i + 1] + this.topRightVert.y;
+
+            let x = Hexagon.VERT_POS[i] + topRightConverted.x, y = Hexagon.VERT_POS[i + 1] + topRightConverted.y;
             let clipCoord = this.translateCoords(x, y);
 
-            clipCoords.push(clipCoord);
+            clipCoords.push(clipCoord.x, clipCoord.y);
         }
 
+        console.log("Debug: Hexagon.SIDE_LENGTH is ", Hexagon.SIDE_LENGTH);
+
         clipCoords = new Float32Array(clipCoords); //flatten
+        console.log("Debug: clip space coords for hexagon is: ", clipCoords);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STATIC_DRAW);
@@ -128,7 +134,7 @@ export class Hexagon{
             gl.enableVertexAttribArray(strokeVertLoc);
             gl.vertexAttribPointer(strokeVertLoc, 2, gl.FLOAT, false, 0, 0);
 
-            gl.drawArrays(gl.LINE_LOOP, 0, 6);
+            gl.drawArrays(gl.LINE_LOOP, 0, vertexCount);
         }
     }
 
@@ -139,13 +145,14 @@ export class Hexagon{
      * @param y world coords
      * 
      * Translates the given world coords returns it in its clipspace position in 2D
-     * @return [cx, cy]
+     * @return {x: cx, y: cy}
      */
     translateCoords(x, y){
-        let cx = (x - Hexagon.CANVAS_W) / this.SIDE_LENGTH; //side length is also clipspace world ratio
-        let cy = (y - Hexagon.CANVAS_H) / this.SIDE_LENGTH;
+        let cx = (x - Hexagon.CANVAS_W / 2.0) / Hexagon.SIDE_LENGTH; //side length is also clipspace world ratio
+        let cy = (y - Hexagon.CANVAS_H / 2.0) / Hexagon.SIDE_LENGTH;
 
-        return [cx, cy];
+        console.log("Debug: cx and cy are respectively", cx, cy, "where given x and y parameters are", x, y);
+        return {x: cx, y: cy};
     }
 
     /**
@@ -158,19 +165,26 @@ export class Hexagon{
     getStrokeCoords(x, y){
         let result = [];
 
+        let topRightConverted = this.translateCoords(this.topRightVert.x, this.topRightVert.y);
         for(let i = 0; i < Hexagon.LINE_INDEXES.length; i++){
-            let currX = Hexagon.VERT_POS[2 * i] + this.topRightVert.x;
-            let currY = Hexagon.VERT_POS[2 * i + 1] + this.topRightVert.y;
+            let currX = Hexagon.VERT_POS[2 * i] + topRightConverted.x;
+            let currY = Hexagon.VERT_POS[2 * i + 1] + topRightConverted.y;
 
-            result.push(this.translateCoords(currX, currY)); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
+            let clipCoord = this.translateCoords(currX, currY);
+            result.push(clipCoord.x, clipCoord.y); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
         }
         return result;
     }
 
     static initProgram(gl, canvasWidth, canvasHeight){
+        gl.enable(gl.DEPTH_TEST);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        //set length properties
         Hexagon.CANVAS_W = canvasWidth;
         Hexagon.CANVAS_H = canvasHeight;
-
+        Hexagon.SIDE_LENGTH = 2.0 * Hexagon.WORLD_SIDE_LENGTH / Hexagon.CANVAS_W;
+    
         Hexagon.program = gl.createProgram();
         Hexagon.programStroke = gl.createProgram();
         Hexagon.posBuffer = gl.createBuffer();
