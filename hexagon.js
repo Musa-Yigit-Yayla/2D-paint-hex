@@ -59,7 +59,8 @@ export class Hexagon{
         0, 0, //p1
         0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(4.0 / 3)), //p5
         0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH,
-    ]
+    ];
+    static LINE_INDEXES = [0, 1, 3, 4, 8, 11];
 
     static program = null;
     static programStroke = null;
@@ -119,7 +120,13 @@ export class Hexagon{
         const vertexCount = 6
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        //PROCEED
+        if(this.strokeEnabled){
+            gl.useProgram(Hexagon.programStroke);
+
+            //we will draw in line loop
+            gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, )
+        }
     }
 
     
@@ -136,6 +143,25 @@ export class Hexagon{
         let cy = (y - Hexagon.CANVAS_H) / this.SIDE_LENGTH;
 
         return [cx, cy];
+    }
+
+    /**
+     * 
+     * @param {*} x 
+     * @param {*} y world coords
+     * 
+     * @return array of stroke coordinates by applying given world coord translation
+     */
+    static getStrokeCoords(x, y){
+        let result = [];
+
+        for(let i = 0; i < Hexagon.LINE_INDEXES.length; i++){
+            let currX = Hexagon.VERT_POS[2 * i];
+            let currY = Hexagon.VERT_POS[2 * i + 1];
+
+            result.push(translateCoords(currX, currY)); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
+        }
+        return result;
     }
 
     static initProgram(gl, canvasWidth, canvasHeight){
