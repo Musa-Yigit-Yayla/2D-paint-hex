@@ -178,12 +178,12 @@ export class Hexagon{
             0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
             0, 0, //p1
             0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
-            0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(10)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(10)), //p4
+            0 - Hexagon.SIDE_LENGTH, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p4
             0, 0, //p1
-            0 - (Math.cos(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(10)), 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(10)), //p4
-            0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(10)), //p5
+            0 - Hexagon.SIDE_LENGTH, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p4
+            0, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p5
             0, 0, //p1
-            0, 0 - (Math.sin(Math.PI / 3) * Hexagon.SIDE_LENGTH * Math.sqrt(10)), //p5
+            0, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p5
             0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH,
         ];
     
