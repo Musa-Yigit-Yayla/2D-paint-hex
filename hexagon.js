@@ -29,6 +29,7 @@ export class Hexagon{
             
             void main(){
                 gl_Position = vec4(vertPos, 0.0, 1.0);
+                gl_PointSize = 5.0;
             }
             `,
         fs:
@@ -59,7 +60,7 @@ export class Hexagon{
     
 
     topRightVert = {x: 0, y: 0}; //in worldspace coords
-    color = {r: 0, g: 0, b: 0};
+    color = {r: 0.0, g: 0.0, b: 0.0};
     strokeEnabled = true;
 
     /**
@@ -112,6 +113,9 @@ export class Hexagon{
 
             let strokeCoords = this.getStrokeCoords();
 
+            console.log("Debug: hexagon.vertices are: ", Hexagon.VERTICES);
+            console.log("Debug: strokeCoords is:", strokeCoords);
+
             //we will draw in line loop
             gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, strokeCoords, gl.STATIC_DRAW);
@@ -120,7 +124,7 @@ export class Hexagon{
             gl.enableVertexAttribArray(strokeVertLoc);
             gl.vertexAttribPointer(strokeVertLoc, 2, gl.FLOAT, false, 0, 0);
 
-            gl.drawArrays(gl.LINE_LOOP, 0, vertexCount);
+            gl.drawArrays(gl.LINE_LOOP, 0, vertexCount * 2);
         }
     }
 
@@ -152,12 +156,12 @@ export class Hexagon{
         let result = [];
 
         let topRightConverted = this.translateCoords(this.topRightVert.x, this.topRightVert.y);
-        for(let i = 0; i < Hexagon.LINE_INDEXES.length; i++){
-            let currX = Hexagon.VERT_POS[2 * i] + topRightConverted.x;
-            let currY = Hexagon.VERT_POS[2 * i + 1] + topRightConverted.y;
+        for(let i = 0; i < Hexagon.LINE_INDEXES.length; i+=2){
+            let currX = Hexagon.VERTICES[i] + topRightConverted.x;
+            let currY = Hexagon.VERTICES[i + 1] + topRightConverted.y;
 
-            let clipCoord = this.translateCoords(currX, currY);
-            result.push(clipCoord.x, clipCoord.y); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
+            //let clipCoord = this.translateCoords(currX, currY);
+            result.push(currX, currY); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
         }
         return result;
     }
@@ -186,6 +190,15 @@ export class Hexagon{
             0, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p5
             0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH,
         ];
+
+        Hexagon.VERTICES = [
+            0, 0, //p1
+            0 - Hexagon.SIDE_LENGTH, 0, //p2
+            0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
+            0 - Hexagon.SIDE_LENGTH, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p4
+            0, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p5
+            0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH //p6
+        ]
     
         Hexagon.program = gl.createProgram();
         Hexagon.programStroke = gl.createProgram();
