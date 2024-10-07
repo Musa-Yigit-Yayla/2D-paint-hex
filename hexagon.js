@@ -29,7 +29,7 @@ export class Hexagon{
             
             void main(){
                 gl_Position = vec4(vertPos, 0.0, 1.0);
-                gl_PointSize = 5.0;
+                //gl_PointSize = 5.0;
             }
             `,
         fs:
@@ -48,7 +48,7 @@ export class Hexagon{
     static WORLD_SIDE_LENGTH = 20; //px in world coordinates
     static SIDE_LENGTH; //in clipspace coordinates (this is also clipspace world ratio)
     static VERT_POS;
-    static LINE_INDEXES = [0, 1, 3, 4, 8, 11];
+    //static LINE_INDEXES = [0, 1, 3, 4, 8, 11];
 
     static program = null;
     static programStroke = null;
@@ -60,7 +60,7 @@ export class Hexagon{
     
 
     topRightVert = {x: 0, y: 0}; //in worldspace coords
-    color = {r: 0.0, g: 0.0, b: 0.0};
+    color = {r: 0.8, g: 0.8, b: 0.8};
     strokeEnabled = true;
 
     /**
@@ -111,7 +111,7 @@ export class Hexagon{
         if(this.strokeEnabled){
             gl.useProgram(Hexagon.programStroke);
 
-            let strokeCoords = this.getStrokeCoords();
+            let strokeCoords = new Float32Array(this.getStrokeCoords());
 
             console.log("Debug: hexagon.vertices are: ", Hexagon.VERTICES);
             console.log("Debug: strokeCoords is:", strokeCoords);
@@ -120,11 +120,11 @@ export class Hexagon{
             gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, strokeCoords, gl.STATIC_DRAW);
 
-            let strokeVertLoc = gl.getAttribLocation(Hexagon.program, 'vertPos');
+            let strokeVertLoc = gl.getAttribLocation(Hexagon.programStroke, 'vertPos');
             gl.enableVertexAttribArray(strokeVertLoc);
             gl.vertexAttribPointer(strokeVertLoc, 2, gl.FLOAT, false, 0, 0);
 
-            gl.drawArrays(gl.LINE_LOOP, 0, vertexCount * 2);
+            gl.drawArrays(gl.LINE_LOOP, 0, vertexCount);
         }
     }
 
@@ -156,7 +156,7 @@ export class Hexagon{
         let result = [];
 
         let topRightConverted = this.translateCoords(this.topRightVert.x, this.topRightVert.y);
-        for(let i = 0; i < Hexagon.LINE_INDEXES.length; i+=2){
+        for(let i = 0; i < Hexagon.VERTICES.length; i+=2){
             let currX = Hexagon.VERTICES[i] + topRightConverted.x;
             let currY = Hexagon.VERTICES[i + 1] + topRightConverted.y;
 
@@ -168,7 +168,7 @@ export class Hexagon{
 
     static initProgram(gl, canvasWidth, canvasHeight){
         gl.enable(gl.DEPTH_TEST);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); //clear for each render once in grid!!!
 
         //set length properties
         Hexagon.CANVAS_W = canvasWidth;
