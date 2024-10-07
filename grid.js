@@ -3,6 +3,8 @@ import { Hexagon } from "./hexagon.js";
 export class Grid{ //flat top even
     gridLength;
     grid = []; //2d array of hexagons
+    brush = {r: 0.0, g: 0.0, b: 0.0};
+    firstTopRight;
 
     constructor(gridLength){
         this.gridLength = gridLength;
@@ -13,7 +15,7 @@ export class Grid{ //flat top even
      */
     initGrid(firstTopRight){ //inits an empty grid
         this.grid = [];
- 
+        this.firstTopRight = firstTopRight;
 
         for(let i = 0; i < this.gridLength; i++){
             this.grid.push([]);
@@ -41,5 +43,21 @@ export class Grid{ //flat top even
                 currHex.render(gl);
             }
         }
+    }
+
+    /**
+     * 
+     * @param {*} eventX 
+     * @param {*} eventY 
+     * Upon a mouse event, returns the corresponding hexagon in which this mouse event position is related to
+     */
+    getGridEntry(eventX, eventY){
+        //we need to fetch the first top right vertex row which is less than or equal to our eventY
+        //then we need to fetch the first top right vertex which our eventX can lie on
+
+        //work as ranges
+
+        
+
     }
 }
