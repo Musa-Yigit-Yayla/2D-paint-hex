@@ -13,6 +13,13 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 //let hex = new Hexagon({x: 30, y: 30});
 //hex.render(gl);
 
+function setEventHandlers(){
+    canvas.onmousedown = e => {
+        console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
+    }
+}
+
+setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
 let n = 50;
 

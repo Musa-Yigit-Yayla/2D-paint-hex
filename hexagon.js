@@ -166,6 +166,16 @@ export class Hexagon{
         return result;
     }
 
+    /**
+     * 
+     * @param {*} px 
+     * @param {*} py coordinates of a point in world coordinate system
+     * @return true when given point is contained by this hexagon or on a side of the hexagon
+     */
+    containsPoint(px, py){
+        return px <= this.topRightVert.x + Hexagon.WORLD_SIDE_LENGTH / 2.0 && px >= this.topRightVert.x - 1.5 * Hexagon.WORLD_SIDE_LENGTH && py >= this.topRightVert.y;
+    }
+
     static initProgram(gl, canvasWidth, canvasHeight){
         gl.enable(gl.DEPTH_TEST);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); //clear for each render once in grid!!!

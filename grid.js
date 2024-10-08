@@ -55,9 +55,11 @@ export class Grid{ //flat top even
         //we need to fetch the first top right vertex row which is less than or equal to our eventY
         //then we need to fetch the first top right vertex which our eventX can lie on
 
-        //work as ranges
+        //work as ranges similar to MM select elimination
+        const nx = 1.5 * Hexagon.WORLD_SIDE_LENGTH;
+        const ny = Math.sqrt(3) * Hexagon.WORLD_SIDE_LENGTH; //steps for finding a suitable region
 
-        
-
+        let gridStartX;
+        let xIndex = eventX - this.firstTopRight.x; //INCOMPLETE PROCEED
     }
 }
