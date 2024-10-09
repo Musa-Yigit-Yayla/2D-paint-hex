@@ -37,12 +37,13 @@ export class Grid{ //flat top even
      * Programmatically renders each hexagon to comprise a total grid
      */
     renderGrid(gl){
-        for(let i = 0; i < this.gridLength; i++){
+        /*for(let i = 0; i < this.gridLength; i++){
             for(let j = 0; j < this.gridLength; j++){
                 let currHex = this.grid[i][j];
                 currHex.render(gl);
             }
-        }
+        }*/
+       Hexagon.renderGrid(gl, grid);
     }
 
     /**

@@ -64,6 +64,7 @@ export class Hexagon{
     topRightVert = {x: 0, y: 0}; //in worldspace coords
     color = {r: 0.8, g: 0.8, b: 0.8};
     strokeEnabled = true;
+    renderEnabled = true; //when false, we do not render this hexagon
 
     /**
      * 
@@ -74,7 +75,11 @@ export class Hexagon{
         this.topRightVert = topRightVert;
     }
 
+    //Method for rendering a single hexagon
     render(gl){
+        if(!this.renderEnabled){
+            return;
+        }
         //first render the interior
         gl.useProgram(Hexagon.program);
 
@@ -130,7 +135,36 @@ export class Hexagon{
         }
     }
 
-    
+    /**
+     * 
+     * @param {*} gl 
+     * @param {*} grid 2d array of Hexagon instances
+     * render the whole grid at once to overcome CPU-GPU bottleneck
+     */
+    static renderGrid(gl, grid){
+        //render the interior
+        gl.useProgram(Hexagon.program);
+
+        //fetch the clipspace coordinates of ALL renderable hexagons
+        let clipCoords = [];
+        for(let i = 0; i < grid.length; i++){
+            for(let j = 0; j < grid[i].length; j++){
+                let currHex = grid[i][j];
+
+                if(currHex.renderEnabled){
+                    let topRightConverted = currHex.translateCoords(currHex.topRightVert.x, currHex.topRightVert.y);
+                    for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
+            
+                        let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
+            
+                        clipCoords.push(x + topRightConverted.x, y + topRightConverted.y);
+                    }
+                }
+            }
+        }
+        
+    }
+
 
     /**
      * @param x
