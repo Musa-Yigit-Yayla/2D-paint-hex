@@ -60,14 +60,15 @@ export class Grid{ //flat top even
         const ny = Math.sqrt(3) * Hexagon.WORLD_SIDE_LENGTH; //steps for finding a suitable region
 
         let gridStartX = this.firstTopRight.x - nx;
-        let gridStartY = this.firstTopRight.y - ny;
+        let gridStartY = this.firstTopRight.y - ny / 2.0;
         let xIndex = Math.floor((eventX - gridStartX) / nx); //INCOMPLETE PROCEED
         let yIndex = Math.floor((eventY - gridStartY) / ny);
 
+        console.log("Debug: eventX, eventY yield ", eventX, eventY, " and gridStart coordinates yield", gridStartX, gridStartY);
         console.log("Debug: xIndex and yIndex in getGridEntry yield " + xIndex + ", " + yIndex);
         
         //now we should check the direct hexagon and its neighbours
-        let currHex = this.grid[xIndex][yIndex];
+        let currHex = this.grid[yIndex][xIndex];
         if(currHex !== null && currHex.containsPoint(eventX - gridStartX, eventY - gridStartY)){
             return currHex;
         }

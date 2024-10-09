@@ -1,5 +1,7 @@
 //File for managing hexagon drawing
 
+const DEBUG_LOG = false;
+
 export class Hexagon{
     static shaders = {
         vs: 
@@ -79,7 +81,7 @@ export class Hexagon{
         //fetch the clipspace coordinates
         let clipCoords = [];
         let topRightConverted = this.translateCoords(this.topRightVert.x, this.topRightVert.y);
-        console.log("Debug: topRightConverted is", topRightConverted);
+        DEBUG_LOG && console.log("Debug: topRightConverted is", topRightConverted);
         for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
 
             let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
@@ -87,10 +89,10 @@ export class Hexagon{
             clipCoords.push(x + topRightConverted.x, y + topRightConverted.y);
         }
 
-        console.log("Debug: Hexagon.SIDE_LENGTH is ", Hexagon.SIDE_LENGTH);
+        DEBUG_LOG && console.log("Debug: Hexagon.SIDE_LENGTH is ", Hexagon.SIDE_LENGTH);
 
         clipCoords = new Float32Array(clipCoords); //flatten
-        console.log("Debug: clip space coords for hexagon is: ", clipCoords);
+        DEBUG_LOG && console.log("Debug: clip space coords for hexagon is: ", clipCoords);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STATIC_DRAW);
@@ -113,8 +115,8 @@ export class Hexagon{
 
             let strokeCoords = new Float32Array(this.getStrokeCoords());
 
-            console.log("Debug: hexagon.vertices are: ", Hexagon.VERTICES);
-            console.log("Debug: strokeCoords is:", strokeCoords);
+            DEBUG_LOG && console.log("Debug: hexagon.vertices are: ", Hexagon.VERTICES);
+            DEBUG_LOG && console.log("Debug: strokeCoords is:", strokeCoords);
 
             //we will draw in line loop
             gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
@@ -141,7 +143,7 @@ export class Hexagon{
         let cx = (x - Hexagon.CANVAS_W / 2.0) * (2.0 / Hexagon.CANVAS_W); //side length is also clipspace world ratio
         let cy = -1.0 * (y - Hexagon.CANVAS_H / 2.0) * (2.0 / Hexagon.CANVAS_H);
 
-        console.log("Debug: cx and cy are respectively", cx, cy, "where given x and y parameters are", x, y);
+        DEBUG_LOG && console.log("Debug: cx and cy are respectively", cx, cy, "where given x and y parameters are", x, y);
         return {x: cx, y: cy};
     }
 
@@ -173,6 +175,7 @@ export class Hexagon{
      * @return true when given point is contained by this hexagon or on a side of the hexagon
      */
     containsPoint(px, py){
+        console.log("Debug: containsPoint invoked with px, py and this.topRightVert as ", px, py, this.topRightVert);
         return px <= this.topRightVert.x + Hexagon.WORLD_SIDE_LENGTH / 2.0 && px >= this.topRightVert.x - 1.5 * Hexagon.WORLD_SIDE_LENGTH && py >= this.topRightVert.y;
     }
 
