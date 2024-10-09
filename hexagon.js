@@ -1,5 +1,7 @@
 //File for managing hexagon drawing
 
+const DEBUG_LOG = false;
+
 export class Hexagon{
     static shaders = {
         vs: 
@@ -29,6 +31,7 @@ export class Hexagon{
             
             void main(){
                 gl_Position = vec4(vertPos, 0.0, 1.0);
+                //gl_PointSize = 5.0;
             }
             `,
         fs:
@@ -47,7 +50,7 @@ export class Hexagon{
     static WORLD_SIDE_LENGTH = 20; //px in world coordinates
     static SIDE_LENGTH; //in clipspace coordinates (this is also clipspace world ratio)
     static VERT_POS;
-    static LINE_INDEXES = [0, 1, 3, 4, 8, 11];
+    //static LINE_INDEXES = [0, 1, 3, 4, 8, 11];
 
     static program = null;
     static programStroke = null;
@@ -59,7 +62,7 @@ export class Hexagon{
     
 
     topRightVert = {x: 0, y: 0}; //in worldspace coords
-    color = {r: 0, g: 0, b: 0};
+    color = {r: 0.8, g: 0.8, b: 0.8};
     strokeEnabled = true;
 
     /**
@@ -78,7 +81,7 @@ export class Hexagon{
         //fetch the clipspace coordinates
         let clipCoords = [];
         let topRightConverted = this.translateCoords(this.topRightVert.x, this.topRightVert.y);
-        console.log("Debug: topRightConverted is", topRightConverted);
+        DEBUG_LOG && console.log("Debug: topRightConverted is", topRightConverted);
         for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
 
             let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
@@ -86,10 +89,10 @@ export class Hexagon{
             clipCoords.push(x + topRightConverted.x, y + topRightConverted.y);
         }
 
-        console.log("Debug: Hexagon.SIDE_LENGTH is ", Hexagon.SIDE_LENGTH);
+        DEBUG_LOG && console.log("Debug: Hexagon.SIDE_LENGTH is ", Hexagon.SIDE_LENGTH);
 
         clipCoords = new Float32Array(clipCoords); //flatten
-        console.log("Debug: clip space coords for hexagon is: ", clipCoords);
+        DEBUG_LOG && console.log("Debug: clip space coords for hexagon is: ", clipCoords);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STATIC_DRAW);
@@ -110,13 +113,16 @@ export class Hexagon{
         if(this.strokeEnabled){
             gl.useProgram(Hexagon.programStroke);
 
-            let strokeCoords = this.getStrokeCoords();
+            let strokeCoords = new Float32Array(this.getStrokeCoords());
+
+            DEBUG_LOG && console.log("Debug: hexagon.vertices are: ", Hexagon.VERTICES);
+            DEBUG_LOG && console.log("Debug: strokeCoords is:", strokeCoords);
 
             //we will draw in line loop
             gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
             gl.bufferData(gl.ARRAY_BUFFER, strokeCoords, gl.STATIC_DRAW);
 
-            let strokeVertLoc = gl.getAttribLocation(Hexagon.program, 'vertPos');
+            let strokeVertLoc = gl.getAttribLocation(Hexagon.programStroke, 'vertPos');
             gl.enableVertexAttribArray(strokeVertLoc);
             gl.vertexAttribPointer(strokeVertLoc, 2, gl.FLOAT, false, 0, 0);
 
@@ -137,7 +143,7 @@ export class Hexagon{
         let cx = (x - Hexagon.CANVAS_W / 2.0) * (2.0 / Hexagon.CANVAS_W); //side length is also clipspace world ratio
         let cy = -1.0 * (y - Hexagon.CANVAS_H / 2.0) * (2.0 / Hexagon.CANVAS_H);
 
-        console.log("Debug: cx and cy are respectively", cx, cy, "where given x and y parameters are", x, y);
+        DEBUG_LOG && console.log("Debug: cx and cy are respectively", cx, cy, "where given x and y parameters are", x, y);
         return {x: cx, y: cy};
     }
 
@@ -152,19 +158,30 @@ export class Hexagon{
         let result = [];
 
         let topRightConverted = this.translateCoords(this.topRightVert.x, this.topRightVert.y);
-        for(let i = 0; i < Hexagon.LINE_INDEXES.length; i++){
-            let currX = Hexagon.VERT_POS[2 * i] + topRightConverted.x;
-            let currY = Hexagon.VERT_POS[2 * i + 1] + topRightConverted.y;
+        for(let i = 0; i < Hexagon.VERTICES.length; i+=2){
+            let currX = Hexagon.VERTICES[i] + topRightConverted.x;
+            let currY = Hexagon.VERTICES[i + 1] + topRightConverted.y;
 
-            let clipCoord = this.translateCoords(currX, currY);
-            result.push(clipCoord.x, clipCoord.y); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
+            //let clipCoord = this.translateCoords(currX, currY);
+            result.push(currX, currY); //MIGHT BE PROBLEMATIC TRANSLATION CHECK!
         }
         return result;
     }
 
+    /**
+     * 
+     * @param {*} px 
+     * @param {*} py coordinates of a point in world coordinate system
+     * @return true when given point is contained by this hexagon or on a side of the hexagon
+     */
+    containsPoint(px, py){
+        console.log("Debug: containsPoint invoked with px, py and this.topRightVert as ", px, py, this.topRightVert);
+        return px <= this.topRightVert.x + Hexagon.WORLD_SIDE_LENGTH / 2.0 && px >= this.topRightVert.x - 1.5 * Hexagon.WORLD_SIDE_LENGTH && py >= this.topRightVert.y;
+    }
+
     static initProgram(gl, canvasWidth, canvasHeight){
         gl.enable(gl.DEPTH_TEST);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); //clear for each render once in grid!!!
 
         //set length properties
         Hexagon.CANVAS_W = canvasWidth;
@@ -186,6 +203,15 @@ export class Hexagon{
             0, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p5
             0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH,
         ];
+
+        Hexagon.VERTICES = [
+            0, 0, //p1
+            0 - Hexagon.SIDE_LENGTH, 0, //p2
+            0 - ((1 + Math.sin(Math.PI / 6)) * Hexagon.SIDE_LENGTH), 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH, //p3
+            0 - Hexagon.SIDE_LENGTH, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p4
+            0, (0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH) * 2, //p5
+            0 + Math.sin(Math.PI / 6) * Hexagon.SIDE_LENGTH, 0 - Math.cos(Math.PI / 6) * Hexagon.SIDE_LENGTH //p6
+        ]
     
         Hexagon.program = gl.createProgram();
         Hexagon.programStroke = gl.createProgram();
