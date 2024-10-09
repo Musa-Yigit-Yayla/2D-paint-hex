@@ -49,7 +49,7 @@ export class Grid{ //flat top even
      * 
      * @param {*} eventX 
      * @param {*} eventY 
-     * Upon a mouse event, returns the corresponding hexagon in which this mouse event position is related to
+     * Upon a mouse event, returns the corresponding hexagon in which this mouse event position is related to, if no hex is found returns null
      */
     getGridEntry(eventX, eventY){
         //we need to fetch the first top right vertex row which is less than or equal to our eventY
@@ -59,7 +59,34 @@ export class Grid{ //flat top even
         const nx = 1.5 * Hexagon.WORLD_SIDE_LENGTH;
         const ny = Math.sqrt(3) * Hexagon.WORLD_SIDE_LENGTH; //steps for finding a suitable region
 
-        let gridStartX;
-        let xIndex = eventX - this.firstTopRight.x; //INCOMPLETE PROCEED
+        let gridStartX = this.firstTopRight.x - nx;
+        let gridStartY = this.firstTopRight.y - ny;
+        let xIndex = Math.floor((eventX - gridStartX) / nx); //INCOMPLETE PROCEED
+        let yIndex = Math.floor((eventY - gridStartY) / ny);
+
+        console.log("Debug: xIndex and yIndex in getGridEntry yield " + xIndex + ", " + yIndex);
+        
+        //now we should check the direct hexagon and its neighbours
+        let currHex = this.grid[xIndex][yIndex];
+        if(currHex !== null && currHex.containsPoint(eventX - gridStartX, eventY - gridStartY)){
+            return currHex;
+        }
+        
+        let currX = xIndex - 1;
+        let currY = yIndex - 1;
+
+        for(let i = 0; i < 3; i++){
+            if(currX + i >= 0 && currX + i < this.grid.length){
+                for(let j = 0; j < 3; j++){
+                    if(currY + j >= 0 && currY + j < this.grid.length){
+                        currHex = this.grid[currX + i][currY + j];
+                        if(currHex.containsPoint(eventX - gridStartX, eventY - gridStartY)){
+                            return currHex;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

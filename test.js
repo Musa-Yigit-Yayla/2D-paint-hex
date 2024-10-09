@@ -16,7 +16,22 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 function setEventHandlers(){
     canvas.onmousedown = e => {
         console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
+        let currHex = grid.getGridEntry(e.x, e.y);
+        paintHex(currHex, grid.brush)
     }
+}
+
+/**
+ * 
+ * @param {*} hex a Hexagon instance
+ * @param {*} color expects an object having r, g, b attributes [0, 1]
+ * forces re-render of the whole grid
+ */
+function paintHex(hex, color){
+    console.log("Debug: paintHex received hex", hex);
+    hex.color = color;
+    hex.strokeEnabled = false; //disable stroke
+    grid.renderGrid(gl);
 }
 
 setEventHandlers();
