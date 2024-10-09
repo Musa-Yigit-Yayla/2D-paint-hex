@@ -56,4 +56,5 @@ let n = 10;
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);
 grid.initGrid(firstTopRight);
+Hexagon.setBufferData(gl, grid.grid);
 grid.renderGrid(gl);

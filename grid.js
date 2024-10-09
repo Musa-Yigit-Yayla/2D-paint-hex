@@ -43,7 +43,8 @@ export class Grid{ //flat top even
                 currHex.render(gl);
             }
         }*/
-       Hexagon.renderGrid(gl, grid);
+       //prior to rendering this ensure that you invoke your Hexagon.setBufferData for once (for the first render)
+       Hexagon.renderGrid(gl, this.grid);
     }
 
     /**
