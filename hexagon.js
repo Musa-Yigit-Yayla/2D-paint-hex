@@ -65,6 +65,8 @@ export class Hexagon{
     static vertPosData = [];
     static colorData = [];
     static strokeIndexData = []; //will hold indices of hexagons which are empty
+    static filledIndexData = []; //will hold indices of hexagons which are currently painted
+
 
     static CANVAS_W;
     static CANVAS_H; //canvas attributes, must be passed from app
@@ -84,7 +86,7 @@ export class Hexagon{
         this.topRightVert = topRightVert;
     }
 
-    //Method for rendering a single hexagon
+    //Method for rendering a single hexagon !!!DEPRECATED METHOD
     render(gl){
         if(!this.renderEnabled){
             return;
@@ -149,7 +151,7 @@ export class Hexagon{
      * @param {*} gl 
      * @param {*} grid 2d array of Hexagon instances
      * render the whole grid at once to overcome CPU-GPU bottleneck
-     * IMPORTANT: assumes that buffer data is already set beforehand
+     * IMPORTANT: assumes that buffer data for filled hexagons is already set beforehand
      */
     static renderGrid(gl, grid){
         console.log("Debug: executing Hexagon.renderGrid with grid", grid);
@@ -179,9 +181,11 @@ export class Hexagon{
             let currHex = grid[currRow][currColumn];
             let strokeCoords = currHex.getStrokeCoords();
 
-            for(let j = 0; j < strokeCoords.length; j++){// - 1; j++){
-                strokePosArr.push(strokeCoords[j]);//, strokeCoords[j + 1]);
+            for(let j = 0; j < strokeCoords.length - 3; j += 2){// - 1; j++){
+                strokePosArr.push(strokeCoords[j], strokeCoords[j + 1], strokeCoords[j + 2], strokeCoords[j + 3]);//, strokeCoords[j + 1]);
             }
+            //now push the very last and first vertices
+            strokePosArr.push(strokeCoords[strokeCoords.length - 2], strokeCoords[strokeCoords.length - 1], strokeCoords[0], strokeCoords[1]);
         }
         strokePosArr = new Float32Array(strokePosArr); //flatten
         gl.drawArrays(gl.TRIANGLES, 0, Hexagon.posBuffer.length / 2);
@@ -201,22 +205,24 @@ export class Hexagon{
      * 
      * @param {*} gl 
      * @param {*} grid 2d array of Hexagon instances
-     * set buffer data for all hexagons 
+     * set index data for all hexagons 
      * INVOKE BEFORE INVOKING renderGrid for the first time
      */
-    static setBufferData(gl, grid){
+    static setIndexData(gl, grid){
         //fetch the clipspace coordinates of ALL renderable hexagons
         let clipCoords = [];
         let fillColors = [];
         let strokeIndexes = [];
+        let filledIndexes = [];
         const vertexCount = 6;
 
         for(let i = 0; i < grid.length; i++){
             for(let j = 0; j < grid[i].length; j++){
                 let currHex = grid[i][j];
+                let currIndex = i * grid[0].length + j;
 
                 if(!currHex.strokeEnabled){
-                    let topRightConverted = currHex.translateCoords(currHex.topRightVert.x, currHex.topRightVert.y);
+                    /*let topRightConverted = currHex.translateCoords(currHex.topRightVert.x, currHex.topRightVert.y);
                     for(let k = 0; k < Hexagon.VERT_POS.length - 1; k += 2){
             
                         let x = Hexagon.VERT_POS[k], y = Hexagon.VERT_POS[k + 1];
@@ -228,11 +234,11 @@ export class Hexagon{
                             fillColors.push(currHex.color.r, currHex.color.g, currHex.color.b);
                             vCounter++;
                         }
-                    }
+                    }*/
+                    filledIndexes.push(currIndex);
                 }
                 else{
                     //push the index of this hexagon, we will infer the exact position later on
-                    let currIndex = i * grid[0].length + j;
                     strokeIndexes.push(currIndex);
                 }
             }
@@ -240,8 +246,51 @@ export class Hexagon{
         Hexagon.vertPosData = clipCoords;
         Hexagon.colorData = fillColors;
         Hexagon.strokeIndexData = strokeIndexes;
+        Hexagon.filledIndexData = filledIndexes;
+        
 
         console.log("Debug: upon Hexagon.setBufferData vertPosData, colorData and strokeIndexData yields respectively: ", Hexagon.vertPosData, Hexagon.colorData, Hexagon.strokeIndexData);
+    }
+    /**
+     * 
+     * @param {*} gl 
+     * @param {*} grid 
+     * update buffer data so that we fill color and vertPos arrays set beforehand
+     */
+    static updateBufferData(gl, grid){
+        let clipCoords = [];
+        let colorArr = [];
+
+        for(let i = 0; i < Hexagon.filledIndexData.length; i++){
+            let currIndex = Hexagon.filledIndexData[i]; //we assume that this data is always persistent (it must be ensured)
+            let currRow = Math.floor(currIndex / grid.length);
+            let currColumn = currIndex % grid.length;
+
+            let currHex = grid[currRow][currColumn];
+            
+            
+            let topRightConverted = currHex.translateCoords(currHex.topRightVert.x, currHex.topRightVert.y);
+            DEBUG_LOG && console.log("Debug: topRightConverted is", topRightConverted);
+            for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
+
+                let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
+
+                clipCoords.push(x + topRightConverted.x, y + topRightConverted.y);
+                colorArr.push([currHex.color.r, currHex.color.g, currHex.color.b]); //push the color for every vertex
+            }
+        }
+        
+        clipCoords = new Float32Array(clipCoords); //flatten
+        colorArr = new Float32Array(colorArr); //flatten
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STREAM_DRAW);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.fillColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STREAM_DRAW);
+
+        const vertexCount = 6
+        gl.drawArrays(gl.TRIANGLES, 0, 2 * vertexCount);
     }
 
     /**

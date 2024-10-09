@@ -41,12 +41,13 @@ function setEventHandlers(){
  */
 function paintHex(hex, color){
     console.log("Debug: paintHex received hex", hex);
-    if(hex !== null){
+    /*if(hex !== null){
         hex.color = color;
         hex.strokeEnabled = false; //disable stroke
         grid.renderGrid(gl);
         //hex.render(gl);
-    }
+    }*/
+   //we need to 
 }
 
 setEventHandlers();
@@ -56,5 +57,5 @@ let n = 10;
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);
 grid.initGrid(firstTopRight);
-Hexagon.setBufferData(gl, grid.grid);
+Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
