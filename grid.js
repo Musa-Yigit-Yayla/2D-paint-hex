@@ -51,9 +51,10 @@ export class Grid{ //flat top even
      * 
      * @param {*} eventX 
      * @param {*} eventY 
+     * @param {*} gridIndexes, is expected to be an empty array in which we pass row and column indexes of the matched hexagon if it exists
      * Upon a mouse event, returns the corresponding hexagon in which this mouse event position is related to, if no hex is found returns null
      */
-    getGridEntry(eventX, eventY){
+    getGridEntry(eventX, eventY, gridIndexes = null){
         //we need to fetch the first top right vertex row which is less than or equal to our eventY
         //then we need to fetch the first top right vertex which our eventX can lie on
 
@@ -72,6 +73,9 @@ export class Grid{ //flat top even
         //now we should check the direct hexagon and its neighbours
         let currHex = this.grid[yIndex][xIndex];
         if(currHex !== null && currHex.containsPoint(eventX - gridStartX, eventY - gridStartY)){
+            if(gridIndexes !== null){
+                gridIndexes.push(yIndex, xIndex);
+            }
             return currHex;
         }
         
@@ -84,6 +88,9 @@ export class Grid{ //flat top even
                     if(currY + j >= 0 && currY + j < this.grid.length){
                         currHex = this.grid[currX + i][currY + j];
                         if(currHex.containsPoint(eventX - gridStartX, eventY - gridStartY)){
+                            if(gridIndexes !== null){
+                                gridIndexes.push(yIndex, xIndex);
+                            }
                             return currHex;
                         }
                     }

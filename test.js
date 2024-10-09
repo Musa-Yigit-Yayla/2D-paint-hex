@@ -19,13 +19,17 @@ function setEventHandlers(){
     canvas.onmousedown = e => {
         console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
         mousedown = true;
-        let currHex = grid.getGridEntry(e.x, e.y);
-        paintHex(currHex, grid.brush)
+
+        let gridIndexes = [];
+        let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+        paintHex(currHex, grid.brush, gridIndexes);
     }
     canvas.onmousemove = e => {
         if(mousedown){
-            let currHex = grid.getGridEntry(e.x, e.y);
-            paintHex(currHex, grid.brush)
+
+            let gridIndexes = [];
+            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            paintHex(currHex, grid.brush, gridIndexes)
         }
     }
     canvas.onmouseup = e => {
@@ -39,15 +43,19 @@ function setEventHandlers(){
  * @param {*} color expects an object having r, g, b attributes [0, 1]
  * forces re-render of the whole grid
  */
-function paintHex(hex, color){
+function paintHex(hex, color, gridIndexes){
     console.log("Debug: paintHex received hex", hex);
-    /*if(hex !== null){
+    if(hex !== null){
         hex.color = color;
+
+        if(hex.strokeEnabled){
+            //here we need to remove this empty cell's index from the static hexagon variable and place it into 
+        }
+
         hex.strokeEnabled = false; //disable stroke
         grid.renderGrid(gl);
         //hex.render(gl);
-    }*/
-   //we need to 
+    }
 }
 
 setEventHandlers();
