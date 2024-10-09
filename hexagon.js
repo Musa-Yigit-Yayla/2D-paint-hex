@@ -8,8 +8,11 @@ export class Hexagon{
             `#version 300 es
             
             in vec2 vertPos;
+            in vec3 fillColor;
+            out vec3 color;
 
             void main(){
+                color = fillColor;
                 gl_Position = vec4(vertPos, 0.0, 1.0); //later pass an attribute for z as well for layering
             }`,
         fs: 
@@ -17,7 +20,7 @@ export class Hexagon{
             precision mediump float;
 
             out vec4 outColor;
-            uniform vec3 color; //uniform because a grid will have a single color
+            in vec3 color;
 
             void main(){
                 outColor = vec4(color, 1.0);
@@ -56,6 +59,12 @@ export class Hexagon{
     static programStroke = null;
     static posBuffer = null;
     static strokePosBuffer = null;
+    static fillColorBuffer = null;
+
+    //data of each hexagon in our grid
+    static vertPosData = [];
+    static colorData = [];
+    static strokeIndexData = []; //will hold indices of hexagons which are empty
 
     static CANVAS_W;
     static CANVAS_H; //canvas attributes, must be passed from app
@@ -140,31 +149,69 @@ export class Hexagon{
      * @param {*} gl 
      * @param {*} grid 2d array of Hexagon instances
      * render the whole grid at once to overcome CPU-GPU bottleneck
+     * IMPORTANT: assumes that buffer data is already set beforehand
      */
     static renderGrid(gl, grid){
         //render the interior
         gl.useProgram(Hexagon.program);
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
+        let vertPosLoc = gl.getAttribLocation(Hexagon.program, 'vertPos');
+        gl.enableVertexAttribArray(vertPosLoc); //enable GLSL attribute location
+        gl.vertexAttribPointer(vertPosLoc, 2, gl.FLOAT, false, 0, 0);
+        
+        //pass fill color buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.fillColorBuffer);
+        let fillColorPosLoc = gl.getAttribLocation(Hexagon.program, 'fillColor');
+        gl.enableVertexAttribArray(fillColorPosLoc);
+        gl.vertexAttribPointer(fillColorPosLoc, 3, gl.FLOAT, false, 0, 0);
+
+        //now initalize stroke pos array from index array and pass it
+    }
+
+    /**
+     * 
+     * @param {*} gl 
+     * @param {*} grid 2d array of Hexagon instances
+     * set buffer data for all hexagons
+     */
+    static setBufferData(gl, grid){
         //fetch the clipspace coordinates of ALL renderable hexagons
         let clipCoords = [];
+        let fillColors = [];
+        let strokeIndexes = [];
+        const vertexCount = 6;
+
         for(let i = 0; i < grid.length; i++){
             for(let j = 0; j < grid[i].length; j++){
                 let currHex = grid[i][j];
 
                 if(currHex.renderEnabled){
                     let topRightConverted = currHex.translateCoords(currHex.topRightVert.x, currHex.topRightVert.y);
-                    for(let i = 0; i < Hexagon.VERT_POS.length - 1; i += 2){
+                    for(let k = 0; k < Hexagon.VERT_POS.length - 1; k += 2){
             
-                        let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
+                        let x = Hexagon.VERT_POS[k], y = Hexagon.VERT_POS[k + 1];
             
                         clipCoords.push(x + topRightConverted.x, y + topRightConverted.y);
+
+                        let vCounter = 0;
+                        while(vCounter < vertexCount){
+                            fillColors.push(currHex.color.r, currHex.color.g, currHex.color.b);
+                            vCounter++;
+                        }
                     }
+                }
+                else{
+                    //push the index of this hexagon, we will infer the exact position later on
+                    let currIndex = i * grid[0].length + j;
+                    strokeIndexes.push(currIndex);
                 }
             }
         }
-        
+        Hexagon.vertPosData = clipCoords;
+        Hexagon.colorData = fillColors;
+        Hexagon.strokeIndexData = strokeIndexes;
     }
-
 
     /**
      * @param x
@@ -251,6 +298,7 @@ export class Hexagon{
         Hexagon.programStroke = gl.createProgram();
         Hexagon.posBuffer = gl.createBuffer();
         Hexagon.strokePosBuffer = gl.createBuffer();
+        Hexagon.fillColorBuffer = gl.createBuffer();
 
         //init shaders then link and compile program
         let vertexShader = gl.createShader(gl.VERTEX_SHADER);
