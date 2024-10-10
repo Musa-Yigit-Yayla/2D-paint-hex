@@ -154,7 +154,7 @@ export class Hexagon{
      * IMPORTANT: assumes that buffer data for filled hexagons is already set beforehand
      */
     static renderGrid(gl, grid){
-        console.log("Debug: executing Hexagon.renderGrid with grid", grid);
+        DEBUG_LOG && console.log("Debug: executing Hexagon.renderGrid with grid", grid);
         //render the interior
         gl.useProgram(Hexagon.program);
 
@@ -176,7 +176,7 @@ export class Hexagon{
 
             let currRow = Math.floor(currIndex / grid.length);
             let currColumn = currIndex % grid.length;
-            console.log("Debug: renderGrid loop currIndex, curr row and column are", currIndex, currRow, currColumn);
+            DEBUG_LOG && console.log("Debug: renderGrid loop currIndex, curr row and column are", currIndex, currRow, currColumn);
 
             let currHex = grid[currRow][currColumn];
             let strokeCoords = currHex.getStrokeCoords();
@@ -336,7 +336,7 @@ export class Hexagon{
      * @return true when given point is contained by this hexagon or on a side of the hexagon
      */
     containsPoint(px, py){
-        console.log("Debug: containsPoint invoked with px, py and this.topRightVert as ", px, py, this.topRightVert);
+        DEBUG_LOG && console.log("Debug: containsPoint invoked with px, py and this.topRightVert as ", px, py, this.topRightVert);
         return px <= this.topRightVert.x + Hexagon.WORLD_SIDE_LENGTH / 2.0 && px >= this.topRightVert.x - 1.5 * Hexagon.WORLD_SIDE_LENGTH && py >= this.topRightVert.y;
     }
 

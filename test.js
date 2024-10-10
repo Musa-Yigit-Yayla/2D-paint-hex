@@ -22,14 +22,14 @@ function setEventHandlers(){
 
         let gridIndexes = [];
         let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-        paintHex(currHex, grid.brush, gridIndexes, grid);
+        paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
     }
     canvas.onmousemove = e => {
         if(mousedown){
 
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-            paintHex(currHex, grid.brush, gridIndexes, grid)
+            paintHex(currHex, grid.brush, gridIndexes, grid.grid.length)
         }
     }
     canvas.onmouseup = e => {
@@ -43,8 +43,9 @@ function setEventHandlers(){
  * @param {*} color expects an object having r, g, b attributes [0, 1]
  * forces re-render of the whole grid
  */
-function paintHex(hex, color, gridIndexes, grid){
-    console.log("Debug: paintHex received hex", hex);
+function paintHex(hex, color, gridIndexes, gridRowLength){
+    //console.log("Debug: paintHex received hex", hex);
+    console.log("Debug: hex filled index and stroke index arrays are: ", Hexagon.filledIndexData, Hexagon.strokeIndexData);
     if(hex !== null){
         hex.color = color;
 
@@ -52,9 +53,10 @@ function paintHex(hex, color, gridIndexes, grid){
             //here we need to remove this empty cell's index from the static hexagon variable and place it into filledIndexArray
             let rowIndex = gridIndexes[0];
             let columnIndex = gridIndexes[1];
-            let index = rowIndex * grid.length + columnIndex; 
+            let index = rowIndex * gridRowLength + columnIndex; 
             removeByValue(Hexagon.strokeIndexData, index);
             
+            console.log("Debug: paintHex rowIndex columnIndex and index are:", rowIndex, columnIndex, index);
             Hexagon.filledIndexData.push(index);
         }
 
