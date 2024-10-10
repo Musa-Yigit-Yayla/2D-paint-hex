@@ -22,14 +22,14 @@ function setEventHandlers(){
 
         let gridIndexes = [];
         let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-        paintHex(currHex, grid.brush, gridIndexes);
+        paintHex(currHex, grid.brush, gridIndexes, grid);
     }
     canvas.onmousemove = e => {
         if(mousedown){
 
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-            paintHex(currHex, grid.brush, gridIndexes)
+            paintHex(currHex, grid.brush, gridIndexes, grid)
         }
     }
     canvas.onmouseup = e => {
@@ -43,13 +43,19 @@ function setEventHandlers(){
  * @param {*} color expects an object having r, g, b attributes [0, 1]
  * forces re-render of the whole grid
  */
-function paintHex(hex, color, gridIndexes){
+function paintHex(hex, color, gridIndexes, grid){
     console.log("Debug: paintHex received hex", hex);
     if(hex !== null){
         hex.color = color;
 
         if(hex.strokeEnabled){
-            //here we need to remove this empty cell's index from the static hexagon variable and place it into 
+            //here we need to remove this empty cell's index from the static hexagon variable and place it into filledIndexArray
+            let rowIndex = gridIndexes[0];
+            let columnIndex = gridIndexes[1];
+            let index = rowIndex * grid.length + columnIndex; 
+            removeByValue(Hexagon.strokeIndexData, index);
+            
+            Hexagon.filledIndexData.push(index);
         }
 
         hex.strokeEnabled = false; //disable stroke
@@ -67,3 +73,12 @@ let grid = new Grid(n);
 grid.initGrid(firstTopRight);
 Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
+
+
+//removes a given element by value from the given array
+function removeByValue(array, item){
+    var index = array.indexOf(item);
+    if (index !== -1) {
+      array.splice(index, 1);
+    }
+}
