@@ -67,6 +67,7 @@ export class Hexagon{
     static strokeIndexData = []; //will hold indices of hexagons which are empty
     static filledIndexData = []; //will hold indices of hexagons which are currently painted
 
+    static vertPosLength; //total length of vertPosData which is passed to the buffer
 
     static CANVAS_W;
     static CANVAS_H; //canvas attributes, must be passed from app
@@ -151,9 +152,10 @@ export class Hexagon{
      * @param {*} gl 
      * @param {*} grid 2d array of Hexagon instances
      * render the whole grid at once to overcome CPU-GPU bottleneck
-     * IMPORTANT: assumes that buffer data for filled hexagons is already set beforehand
+     * IMPORTANT: updates buffer data in place
      */
     static renderGrid(gl, grid){
+        Hexagon.updateBufferData(gl, grid); //update here in place
         DEBUG_LOG && console.log("Debug: executing Hexagon.renderGrid with grid", grid);
         //render the interior
         gl.useProgram(Hexagon.program);
@@ -188,7 +190,8 @@ export class Hexagon{
             strokePosArr.push(strokeCoords[strokeCoords.length - 2], strokeCoords[strokeCoords.length - 1], strokeCoords[0], strokeCoords[1]);
         }
         strokePosArr = new Float32Array(strokePosArr); //flatten
-        gl.drawArrays(gl.TRIANGLES, 0, Hexagon.posBuffer.length / 2);
+        gl.drawArrays(gl.TRIANGLES, 0, Hexagon.vertPosLength / 2);
+        console.log("Debug: Hexagon.vertPosLength is ", Hexagon.vertPosLength);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, strokePosArr, gl.STREAM_DRAW);
@@ -284,13 +287,14 @@ export class Hexagon{
         colorArr = new Float32Array(colorArr); //flatten
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STREAM_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STATIC_DRAW);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.fillColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STREAM_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STATIC_DRAW);
 
-        const vertexCount = 6
-        gl.drawArrays(gl.TRIANGLES, 0, 2 * vertexCount);
+        Hexagon.vertPosLength = clipCoords.length;
+        //const vertexCount = 6
+        //gl.drawArrays(gl.TRIANGLES, 0, 2 * vertexCount);
     }
 
     /**
