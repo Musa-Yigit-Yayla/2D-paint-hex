@@ -4,6 +4,10 @@ import { Grid } from "./grid.js";
 let canvas = document.getElementById('canvas');
 let gl = canvas.getContext('webgl2');
 
+// Add an event listener for right-click (contextmenu) on the canvas
+canvas.addEventListener('contextmenu', function(event) {
+    event.preventDefault(); // Prevent the default browser menu from appearing
+});
 let mousedown = false;
 
 //WE NEED 1X1 ratio in canvas!
@@ -18,18 +22,31 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 function setEventHandlers(){
     canvas.onmousedown = e => {
         console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
-        mousedown = true;
 
-        let gridIndexes = [];
-        let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-        paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+        mousedown = true;
+        if(e.button === 0){ //left click
+            let gridIndexes = [];
+            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+        }
+        else if(e.button === 2){ //right click
+            let gridIndexes = [];
+            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            eraseHex(currHex, gridIndexes, grid.grid.length);
+        }
     }
     canvas.onmousemove = e => {
         if(mousedown){
-
-            let gridIndexes = [];
-            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-            paintHex(currHex, grid.brush, gridIndexes, grid.grid.length)
+            if(e.button === 0){ //left click
+                let gridIndexes = [];
+                let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+                paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+            }
+            else if(e.button === 2){ //right click
+                let gridIndexes = [];
+                let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+                eraseHex(currHex, gridIndexes, grid.grid.length);
+            }
         }
     }
     canvas.onmouseup = e => {
@@ -63,6 +80,26 @@ function paintHex(hex, color, gridIndexes, gridRowLength){
         hex.strokeEnabled = false; //disable stroke
         grid.renderGrid(gl);
         //hex.render(gl);
+    }
+}
+
+/**
+ * 
+ * @param {*} hex a Hexagon instance
+ * forces re-render of the whole grid when hex not null
+ */ 
+function eraseHex(hex, gridIndexes, gridRowLength){
+    if(hex !== null){
+        if(!hex.strokeEnabled){
+            let rowIndex = gridIndexes[0];
+            let columnIndex = gridIndexes[1];
+            let index = rowIndex * gridRowLength + columnIndex;
+            
+            removeByValue(Hexagon.filledIndexData, index);
+            Hexagon.strokeIndexData.push(index);
+            hex.strokeEnabled = true; //enable stroke
+            grid.renderGrid(gl);
+        }
     }
 }
 
