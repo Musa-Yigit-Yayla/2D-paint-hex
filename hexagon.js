@@ -191,7 +191,7 @@ export class Hexagon{
         }
         strokePosArr = new Float32Array(strokePosArr); //flatten
         gl.drawArrays(gl.TRIANGLES, 0, Hexagon.vertPosLength / 2);
-        console.log("Debug: Hexagon.vertPosLength is ", Hexagon.vertPosLength);
+        DEBUG_LOG && console.log("Debug: Hexagon.vertPosLength is ", Hexagon.vertPosLength);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.strokePosBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, strokePosArr, gl.STREAM_DRAW);

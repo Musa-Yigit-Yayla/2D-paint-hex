@@ -8,7 +8,7 @@ let gl = canvas.getContext('webgl2');
 canvas.addEventListener('contextmenu', function(event) {
     event.preventDefault(); // Prevent the default browser menu from appearing
 });
-let mousedown = false;
+let leftMouseDown = false, rightMouseDown = false;
 
 //WE NEED 1X1 ratio in canvas!
 console.log("Debug: canvas width and height are", canvas.width, canvas.height);
@@ -23,34 +23,43 @@ function setEventHandlers(){
     canvas.onmousedown = e => {
         console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
 
-        mousedown = true;
         if(e.button === 0){ //left click
+            console.log("Debug: left click down");
+            leftMouseDown = true;
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
             paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
         }
         else if(e.button === 2){ //right click
+            console.log("Debug: right click down");
+            rightMouseDown = true;
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
             eraseHex(currHex, gridIndexes, grid.grid.length);
         }
     }
     canvas.onmousemove = e => {
-        if(mousedown){
-            if(e.button === 0){ //left click
-                let gridIndexes = [];
-                let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-                paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
-            }
-            else if(e.button === 2){ //right click
-                let gridIndexes = [];
-                let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-                eraseHex(currHex, gridIndexes, grid.grid.length);
-            }
+        if(leftMouseDown){
+            console.log("Debug: left click move");
+            let gridIndexes = [];
+            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+        }
+        else if(rightMouseDown){
+            console.log("Debug: right click move");
+            let gridIndexes = [];
+            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            eraseHex(currHex, gridIndexes, grid.grid.length);
         }
     }
     canvas.onmouseup = e => {
-        mousedown = false;
+        if(e.button === 0){
+            leftMouseDown = false;
+        }
+        else if(e.button === 2){
+            rightMouseDown = false;
+        }
+        
     }
 }
 
@@ -62,7 +71,7 @@ function setEventHandlers(){
  */
 function paintHex(hex, color, gridIndexes, gridRowLength){
     //console.log("Debug: paintHex received hex", hex);
-    console.log("Debug: hex filled index and stroke index arrays are: ", Hexagon.filledIndexData, Hexagon.strokeIndexData);
+    //console.log("Debug: hex filled index and stroke index arrays are: ", Hexagon.filledIndexData, Hexagon.strokeIndexData);
     if(hex !== null){
         hex.color = color;
 
@@ -73,7 +82,7 @@ function paintHex(hex, color, gridIndexes, gridRowLength){
             let index = rowIndex * gridRowLength + columnIndex; 
             removeByValue(Hexagon.strokeIndexData, index);
             
-            console.log("Debug: paintHex rowIndex columnIndex and index are:", rowIndex, columnIndex, index);
+            //console.log("Debug: paintHex rowIndex columnIndex and index are:", rowIndex, columnIndex, index);
             Hexagon.filledIndexData.push(index);
         }
 
@@ -89,6 +98,7 @@ function paintHex(hex, color, gridIndexes, gridRowLength){
  * forces re-render of the whole grid when hex not null
  */ 
 function eraseHex(hex, gridIndexes, gridRowLength){
+    console.log("Debug: eraseHex invoked");
     if(hex !== null){
         if(!hex.strokeEnabled){
             let rowIndex = gridIndexes[0];
@@ -113,6 +123,18 @@ grid.initGrid(firstTopRight);
 Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
 
+function slideHandler(e){
+    let r = grid.brush.r, g = grid.brush.g, b = grid.brush.b;
+    switch(e.target.id){
+        case "redSlider":
+            
+    }
+}
+
+// Attach the handler to multiple sliders
+document.getElementById("blueSlider").addEventListener("change", slideHandler);
+document.getElementById("redSlider").addEventListener("change", slideHandler);
+document.getElementById("greenSlider").addEventListener("change", slideHandler);
 
 //removes a given element by value from the given array
 function removeByValue(array, item){
