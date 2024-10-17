@@ -124,11 +124,16 @@ Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
 
 function slideHandler(e){
+    console.log("Debug: slideHandler invoked");
     let r = grid.brush.r, g = grid.brush.g, b = grid.brush.b;
     switch(e.target.id){
-        case "redSlider":
-            
+        case "redSlider": r = e.target.value / 255.0; break;
+        case "greenSlider": g = e.target.value / 255.0; break;
+        case "blueSlider": b = e.target.value / 255.0; break;
     }
+
+    grid.brush = {r: r, g: g, b: b}; //set the brush
+    console.log("Debug: brush has been set to", grid.brush);
 }
 
 // Attach the handler to multiple sliders

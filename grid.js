@@ -44,7 +44,7 @@ export class Grid{ //flat top even
             }
         }*/
        //prior to rendering this ensure that you invoke your Hexagon.setBufferData for once (for the first render)
-       Hexagon.renderGrid(gl, this.grid);
+       Hexagon.renderGrid(gl, this.grid, this.brush);
     }
 
     /**

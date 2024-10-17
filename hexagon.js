@@ -151,12 +151,13 @@ export class Hexagon{
      * 
      * @param {*} gl 
      * @param {*} grid 2d array of Hexagon instances
+     * @param {*} brush color object with r g b attributes 0-1
      * render the whole grid at once to overcome CPU-GPU bottleneck
      * IMPORTANT: updates buffer data in place
      */
-    static renderGrid(gl, grid){
+    static renderGrid(gl, grid, brush){
         Hexagon.updateBufferData(gl, grid); //update here in place
-        DEBUG_LOG && console.log("Debug: executing Hexagon.renderGrid with grid", grid);
+        console.log("Debug: executing Hexagon.renderGrid with grid and brush", grid, brush);
         //render the interior
         gl.useProgram(Hexagon.program);
 
@@ -166,7 +167,10 @@ export class Hexagon{
         gl.vertexAttribPointer(vertPosLoc, 2, gl.FLOAT, false, 0, 0);
         
         //pass fill color buffer
+        let colorArr = new Float32Array([brush.r, brush.g, brush.b]);
+        console.log("Debug: colorArr in renderGrid is", colorArr);
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.fillColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STATIC_DRAW);
         let fillColorPosLoc = gl.getAttribLocation(Hexagon.program, 'fillColor');
         gl.enableVertexAttribArray(fillColorPosLoc);
         gl.vertexAttribPointer(fillColorPosLoc, 3, gl.FLOAT, false, 0, 0);
