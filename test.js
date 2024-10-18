@@ -116,7 +116,7 @@ function eraseHex(hex, gridIndexes, gridRowLength){
 
 setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
-let n = 5;
+let n = 20;
 
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);
@@ -125,7 +125,7 @@ Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
 
 function slideHandler(e){
-    console.log("Debug: slideHandler invoked");
+    //console.log("Debug: slideHandler invoked");
     let r = grid.brush.r, g = grid.brush.g, b = grid.brush.b;
     switch(e.target.id){
         case "redSlider": r = e.target.value / 255.0; break;
@@ -134,7 +134,22 @@ function slideHandler(e){
     }
 
     grid.brush = {r: r, g: g, b: b}; //set the brush
-    console.log("Debug: brush has been set to", grid.brush);
+    //console.log("Debug: brush has been set to", grid.brush);
+    updateColorCanvas();
+}
+
+function updateColorCanvas(){
+    // Get the canvas element and its context
+    const canvas = document.getElementById('colorCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const color = "rgb(" + (grid.brush.r * 255) + ", " + (grid.brush.g * 255) + ", " + (grid.brush.b * 255) + ")";
+    console.log("Debug: color style string for color canvas", color);
+    // Set the fill color
+    ctx.fillStyle = color;
+
+    // Fill the entire canvas with the color
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
 // Attach the handler to multiple sliders
