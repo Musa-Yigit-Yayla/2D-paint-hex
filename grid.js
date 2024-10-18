@@ -21,7 +21,7 @@ export class Grid{ //flat top even
             this.grid.push([]);
             for(let j = 0; j < this.gridLength; j++){
                 const currX = firstTopRight.x + j * (1.5 * Hexagon.WORLD_SIDE_LENGTH);
-                const currY = firstTopRight.y + i * (Math.sqrt(3) * Hexagon.WORLD_SIDE_LENGTH) - ((j % 2) * Hexagon.WORLD_SIDE_LENGTH / (Math.sqrt(3) / 2.0));
+                const currY = firstTopRight.y + i * (Math.sqrt(3) * Hexagon.WORLD_SIDE_LENGTH) - ((j % 2) * Hexagon.WORLD_SIDE_LENGTH * (Math.sqrt(3) / 2.0));
 
                 let currTopRight = {x: currX, y: currY};
                 let currHex = new Hexagon(currTopRight);
