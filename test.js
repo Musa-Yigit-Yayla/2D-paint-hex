@@ -1,5 +1,6 @@
 import { Hexagon } from "./hexagon.js";
 import { Grid } from "./grid.js";
+import { Operation } from "./operation.js";
 
 let canvas = document.getElementById('canvas');
 let gl = canvas.getContext('webgl2');
@@ -22,6 +23,10 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 function setEventHandlers(){
     canvas.onmousedown = e => {
         console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
+        
+        //reset the curr operation regardless of previously held data
+        currOperation.indexes = new Set();
+        currOperation.brush = grid.brush;
 
         if(e.button === 0){ //left click
             console.log("Debug: left click down");
@@ -29,6 +34,14 @@ function setEventHandlers(){
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
             paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+
+            let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
+            if(isNaN(currIndex)){
+                console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
+            }
+            else{
+                currOperation.indexes.add(currIndex);
+            }
         }
         else if(e.button === 2){ //right click
             console.log("Debug: right click down");
@@ -40,10 +53,21 @@ function setEventHandlers(){
     }
     canvas.onmousemove = e => {
         if(leftMouseDown){
-            console.log("Debug: left click move");
+            //console.log("Debug: left click move");
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
             paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+
+            let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
+            //console.log("Debug: gridIndexes and grid.grid.length are respectively", gridIndexes, grid.grid.length);
+
+            if(isNaN(currIndex)){
+                console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
+            }
+            else{
+                currOperation.indexes.add(currIndex);
+            }
+            //console.log("Debug: pushed currIndex into currOperation", currIndex);
         }
         else if(rightMouseDown){
             console.log("Debug: right click move");
@@ -53,6 +77,7 @@ function setEventHandlers(){
         }
     }
     canvas.onmouseup = e => {
+        console.log("Debug: currOperation yielded", currOperation);
         if(e.button === 0){
             leftMouseDown = false;
         }
@@ -70,7 +95,7 @@ function setEventHandlers(){
  * forces re-render of the whole grid
  */
 function paintHex(hex, color, gridIndexes, gridRowLength){
-    console.log("Debug: paintHex received color", color);
+    //console.log("Debug: paintHex received color", color);
     //console.log("Debug: paintHex received hex", hex);
     //console.log("Debug: hex filled index and stroke index arrays are: ", Hexagon.filledIndexData, Hexagon.strokeIndexData);
     if(hex !== null){
@@ -123,6 +148,9 @@ let grid = new Grid(n);
 grid.initGrid(firstTopRight);
 Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
+
+let operationStack = []; //stack which will hold operations for undo redo
+let currOperation = {indexes: null, brush: null}; //current operation in which we will keep track of
 
 function slideHandler(e){
     //console.log("Debug: slideHandler invoked");
