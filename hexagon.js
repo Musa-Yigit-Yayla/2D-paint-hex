@@ -170,7 +170,7 @@ export class Hexagon{
         let colorArr = new Float32Array([brush.r, brush.g, brush.b]);
         console.log("Debug: colorArr in renderGrid is", colorArr);
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.fillColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STATIC_DRAW);
+        //gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STATIC_DRAW);
         let fillColorPosLoc = gl.getAttribLocation(Hexagon.program, 'fillColor');
         gl.enableVertexAttribArray(fillColorPosLoc);
         gl.vertexAttribPointer(fillColorPosLoc, 3, gl.FLOAT, false, 0, 0);
@@ -274,6 +274,7 @@ export class Hexagon{
             let currColumn = currIndex % grid.length;
 
             let currHex = grid[currRow][currColumn];
+            //console.log("Debug: hex " + i + " color is", currHex.color);
             
             
             let topRightConverted = currHex.translateCoords(currHex.topRightVert.x, currHex.topRightVert.y);
@@ -283,12 +284,13 @@ export class Hexagon{
                 let x = Hexagon.VERT_POS[i], y = Hexagon.VERT_POS[i + 1];
 
                 clipCoords.push(x + topRightConverted.x, y + topRightConverted.y);
-                colorArr.push([currHex.color.r, currHex.color.g, currHex.color.b]); //push the color for every vertex
+                colorArr.push(currHex.color.r, currHex.color.g, currHex.color.b); //push the color for every vertex
             }
         }
-        
+        //console.log("Debug: before flatten color arr is ", colorArr);
         clipCoords = new Float32Array(clipCoords); //flatten
         colorArr = new Float32Array(colorArr); //flatten
+        //console.log("De bug: flattened updateBufferData colorArr is:", colorArr);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.posBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, clipCoords, gl.STATIC_DRAW);

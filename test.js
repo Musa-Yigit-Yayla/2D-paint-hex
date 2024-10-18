@@ -70,6 +70,7 @@ function setEventHandlers(){
  * forces re-render of the whole grid
  */
 function paintHex(hex, color, gridIndexes, gridRowLength){
+    console.log("Debug: paintHex received color", color);
     //console.log("Debug: paintHex received hex", hex);
     //console.log("Debug: hex filled index and stroke index arrays are: ", Hexagon.filledIndexData, Hexagon.strokeIndexData);
     if(hex !== null){
@@ -115,7 +116,7 @@ function eraseHex(hex, gridIndexes, gridRowLength){
 
 setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
-let n = 10;
+let n = 5;
 
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);
