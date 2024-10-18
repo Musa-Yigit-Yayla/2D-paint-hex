@@ -27,12 +27,18 @@ function setEventHandlers(){
         //reset the curr operation regardless of previously held data
         currOperation.indexes = new Set();
         currOperation.brush = grid.brush;
+        currOperation.colorMap = new Map();
 
         if(e.button === 0){ //left click
             console.log("Debug: left click down");
             leftMouseDown = true;
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            let prevColor = currHex.color;
+
+            if(currHex.strokeEnabled){
+                prevColor = -1;
+            }
             paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
 
             let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
@@ -41,6 +47,7 @@ function setEventHandlers(){
             }
             else{
                 currOperation.indexes.add(currIndex);
+                currOperation.colorMap.set(currIndex, prevColor);
             }
         }
         else if(e.button === 2){ //right click
@@ -56,16 +63,33 @@ function setEventHandlers(){
             //console.log("Debug: left click move");
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+
+            //console.log("Debug: currHex onmousemove is", currHex);
+
+            let prevColor = null;
+            if(currHex !== null){
+                if(currHex.strokeEnabled){
+                    prevColor = -1;
+                }
+                else{
+                    prevColor = currHex.color;
+                }
+            }
+
             paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
 
             let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
             //console.log("Debug: gridIndexes and grid.grid.length are respectively", gridIndexes, grid.grid.length);
+
+            
+            //console.log("Debug: prevColor and currHex are", prevColor, currHex);
 
             if(isNaN(currIndex)){
                 console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
             }
             else{
                 currOperation.indexes.add(currIndex);
+                currOperation.colorMap.set(currIndex, prevColor);
             }
             //console.log("Debug: pushed currIndex into currOperation", currIndex);
         }
@@ -150,7 +174,7 @@ Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
 
 let operationStack = []; //stack which will hold operations for undo redo
-let currOperation = {indexes: null, brush: null}; //current operation in which we will keep track of
+let currOperation = {indexes: null, brush: null, colorMap: null}; //current operation in which we will keep track of
 
 function slideHandler(e){
     //console.log("Debug: slideHandler invoked");
