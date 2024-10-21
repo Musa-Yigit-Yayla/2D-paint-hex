@@ -12,9 +12,37 @@ export class Operation{
         this.brushColor = brushColor;
         this.colorMap = colorMap;
     }
+    /**
+     * 
+     * @param {*} grid Grid object
+     * @param {*} operation Operation object
+     */
     static undo(grid, operation){
+        console.log("Debug: undo invoked with operation", operation, " and grid", grid);
+        //revert the related hexagons to their original color before the given operation
+        operation.hexIndexes.forEach(currHexIndex => {
+            let rowIndex = Math.floor(currHexIndex / grid.grid.length);
+            let columnIndex = currHexIndex % grid.grid.length;
+            console.log("Debug: currHexIndex in forEach is, rowIndex and column index are,", currHexIndex, rowIndex, columnIndex);
+            let hex = grid.grid[rowIndex][columnIndex];
 
+            let prevColor = operation.colorMap.get(currHexIndex);
+            console.log("Debug: prevColor yields", prevColor);
+            console.log("Debug: before color assignments hex is", hex);
+            if(prevColor == -1){
+                hex.strokeEnabled = true;
+            }
+            else{
+                hex.color = prevColor;
+            }
+            console.log("Debug: after assignments hex is", hex);
+        });
     }
+    /**
+     * 
+     * @param {*} grid Grid object
+     * @param {*} operation Operation object
+     */
     static redo(grid, operation){
         
     }

@@ -25,7 +25,7 @@ function setEventHandlers(){
         console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
         
         //reset the curr operation regardless of previously held data
-        currOperation.indexes = new Set();
+        currOperation.hexIndexes = new Set();
         currOperation.brush = grid.brush;
         currOperation.colorMap = new Map();
 
@@ -88,7 +88,7 @@ function setEventHandlers(){
                 console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
             }
             else{
-                currOperation.indexes.add(currIndex);
+                currOperation.hexIndexes.add(currIndex);
                 currOperation.colorMap.set(currIndex, prevColor);
             }
             //console.log("Debug: pushed currIndex into currOperation", currIndex);
@@ -174,7 +174,7 @@ Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
 
 let operationStack = []; //stack which will hold operations for undo redo
-let currOperation = {indexes: null, brush: null, colorMap: null}; //current operation in which we will keep track of
+let currOperation = {hexIndexes: null, brush: null, colorMap: null}; //current operation in which we will keep track of
 
 function slideHandler(e){
     //console.log("Debug: slideHandler invoked");
@@ -204,10 +204,21 @@ function updateColorCanvas(){
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+function undoHandler(e){
+    console.log("Debug: undoHandler invoked");
+    Operation.undo(grid, currOperation);
+    grid.renderGrid(gl); //force re-render
+}
+function redoHandler(e){
+
+}
+
 // Attach the handler to multiple sliders
 document.getElementById("blueSlider").addEventListener("change", slideHandler);
 document.getElementById("redSlider").addEventListener("change", slideHandler);
 document.getElementById("greenSlider").addEventListener("change", slideHandler);
+document.getElementById("btUndo").addEventListener("click", undoHandler);
+document.getElementById("btRedo").addEventListener("click", redoHandler);
 
 //removes a given element by value from the given array
 function removeByValue(array, item){
