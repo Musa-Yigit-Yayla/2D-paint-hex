@@ -157,7 +157,7 @@ export class Hexagon{
      */
     static renderGrid(gl, grid, brush){
         Hexagon.updateBufferData(gl, grid); //update here in place
-        console.log("Debug: executing Hexagon.renderGrid with grid and brush", grid, brush);
+        DEBUG_LOG && console.log("Debug: executing Hexagon.renderGrid with grid and brush", grid, brush);
         //render the interior
         gl.useProgram(Hexagon.program);
 
@@ -168,7 +168,7 @@ export class Hexagon{
         
         //pass fill color buffer
         let colorArr = new Float32Array([brush.r, brush.g, brush.b]);
-        console.log("Debug: colorArr in renderGrid is", colorArr);
+        DEBUG_LOG && console.log("Debug: colorArr in renderGrid is", colorArr);
         gl.bindBuffer(gl.ARRAY_BUFFER, Hexagon.fillColorBuffer);
         //gl.bufferData(gl.ARRAY_BUFFER, colorArr, gl.STATIC_DRAW);
         let fillColorPosLoc = gl.getAttribLocation(Hexagon.program, 'fillColor');

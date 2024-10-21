@@ -56,8 +56,28 @@ export class Operation{
      * 
      * @param {*} grid Grid object
      * @param {*} operation Operation object
+     * Performs the given operation on the given grid instance
      */
     static redo(grid, operation){
-        
+        operation.hexIndexes.forEach(currHexIndex => {
+            let rowIndex = Math.floor(currHexIndex / grid.grid.length);
+            let columnIndex = currHexIndex % grid.grid.length;
+            //console.log("Debug: currHexIndex in forEach is, rowIndex and column index are,", currHexIndex, rowIndex, columnIndex);
+
+            let hex = grid.grid[rowIndex][columnIndex];
+            let fillIndex = Hexagon.filledIndexData.indexOf(currHexIndex);
+            let strokeIndex = Hexagon.strokeIndexData.indexOf(currHexIndex);
+
+            if(fillIndex != -1){
+                //since we only consider undo redo of brush strokes, don't play with fill index as it is present already
+                hex.color = operation.brushColor;
+            }
+            else if(strokeIndex != -1){
+                Hexagon.strokeIndexData.splice(currHexIndex, 1);
+                Hexagon.filledIndexData.push(currHexIndex);
+                hex.color = operation.brushColor;
+                hex.strokeEnabled = false;
+            }
+        })
     }
 }

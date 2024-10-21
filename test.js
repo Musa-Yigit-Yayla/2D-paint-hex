@@ -26,7 +26,7 @@ function setEventHandlers(){
         
         //reset the curr operation regardless of previously held data
         currOperation.hexIndexes = new Set();
-        currOperation.brush = grid.brush;
+        currOperation.brushColor = grid.brush;
         currOperation.colorMap = new Map();
 
         if(e.button === 0){ //left click
@@ -87,7 +87,8 @@ function setEventHandlers(){
             //console.log("Debug: prevColor and currHex are", prevColor, currHex);
 
             if(isNaN(currIndex)){
-                console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
+                console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes.\nAlso gridIndexes are", gridIndexes);
+                console.log("Debug: retrieved gridIndexes with event.x, event.y is", gridIndexes, e.x, e.y);
             }
             else if(!currOperation.hexIndexes.has(currIndex)){
                 currOperation.hexIndexes.add(currIndex);
@@ -106,11 +107,12 @@ function setEventHandlers(){
         console.log("Debug: currOperation yielded", currOperation);
         if(e.button === 0){
             leftMouseDown = false;
+            //add the currOperation onto the undo stack
+            undoStack.push(currOperation);
         }
         else if(e.button === 2){
             rightMouseDown = false;
         }
-        
     }
 }
 
@@ -175,8 +177,9 @@ grid.initGrid(firstTopRight);
 Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
 
-let operationStack = []; //stack which will hold operations for undo redo
-let currOperation = {hexIndexes: null, brush: null, colorMap: null}; //current operation in which we will keep track of
+let undoStack = []; //stack which will hold operations for undo
+let redoStack = [];//stack which will hold operations for redo
+let currOperation = new Operation(null, null, null);//{hexIndexes: null, brush: null, colorMap: null}; //current operation in which we will keep track of
 
 function slideHandler(e){
     //console.log("Debug: slideHandler invoked");
@@ -208,11 +211,23 @@ function updateColorCanvas(){
 
 function undoHandler(e){
     console.log("Debug: undoHandler invoked");
-    Operation.undo(grid, currOperation);
-    grid.renderGrid(gl); //force re-render
+    
+    if(undoStack.length > 0){
+        let operation = undoStack.pop();
+        Operation.undo(grid, operation);
+        grid.renderGrid(gl); //force re-render
+        redoStack.push(operation); //push to the redo stack
+    }
 }
 function redoHandler(e){
-
+    console.log("Debug: redoHandler invoked");
+    
+    if(redoStack.length > 0){
+        let operation = redoStack.pop();
+        Operation.redo(grid, operation);
+        grid.renderGrid(gl); //force re-render
+        undoStack.push(operation); //push to the redo stack
+    }
 }
 
 // Attach the handler to multiple sliders
