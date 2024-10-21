@@ -46,8 +46,10 @@ function setEventHandlers(){
                 console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
             }
             else{
-                currOperation.indexes.add(currIndex);
-                currOperation.colorMap.set(currIndex, prevColor);
+                if(!currOperation.hexIndexes.has(currIndex)){
+                    currOperation.hexIndexes.add(currIndex);
+                    currOperation.colorMap.set(currIndex, prevColor);
+                }
             }
         }
         else if(e.button === 2){ //right click
@@ -87,7 +89,7 @@ function setEventHandlers(){
             if(isNaN(currIndex)){
                 console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
             }
-            else{
+            else if(!currOperation.hexIndexes.has(currIndex)){
                 currOperation.hexIndexes.add(currIndex);
                 currOperation.colorMap.set(currIndex, prevColor);
             }

@@ -1,3 +1,5 @@
+import { Hexagon } from "./hexagon.js";
+
 /**
  * A class for representing operations, will be used for implementing undo redo operations
  */
@@ -29,11 +31,23 @@ export class Operation{
             let prevColor = operation.colorMap.get(currHexIndex);
             console.log("Debug: prevColor yields", prevColor);
             console.log("Debug: before color assignments hex is", hex);
+
+            //also update filled and stroke data indices in the following branches
             if(prevColor == -1){
                 hex.strokeEnabled = true;
+                let arrIndex = Hexagon.filledIndexData.indexOf(currHexIndex);
+                if(arrIndex !== -1){
+                    Hexagon.filledIndexData.splice(arrIndex, 1);
+                    Hexagon.strokeIndexData.push(currHexIndex);
+                }
             }
             else{
                 hex.color = prevColor;
+                let arrIndex = Hexagon.strokeIndexData.indexOf(currHexIndex);
+                if(arrIndex !== -1){
+                    Hexagon.strokeIndexData.splice(arrIndex, 1);
+                    Hexagon.filledIndexData.push(currHexIndex);
+                }
             }
             console.log("Debug: after assignments hex is", hex);
         });
