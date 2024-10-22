@@ -20,6 +20,7 @@ export class Operation{
      * @param {*} operation Operation object
      */
     static undo(grid, operation){
+        console.log("Debug: fill and stroke index data in undo begin are", Hexagon.filledIndexData, Hexagon.strokeIndexData);
         console.log("Debug: undo invoked with operation", operation, " and grid", grid);
         //revert the related hexagons to their original color before the given operation
         operation.hexIndexes.forEach(currHexIndex => {
@@ -40,6 +41,9 @@ export class Operation{
                     Hexagon.filledIndexData.splice(arrIndex, 1);
                     Hexagon.strokeIndexData.push(currHexIndex);
                 }
+                else{
+                    console.log("arr index yields -1, print1");
+                }
             }
             else{
                 hex.color = prevColor;
@@ -48,8 +52,13 @@ export class Operation{
                     Hexagon.strokeIndexData.splice(arrIndex, 1);
                     Hexagon.filledIndexData.push(currHexIndex);
                 }
+                else{
+                    console.log("arr index yields -1, print2");
+                }
             }
-            console.log("Debug: after assignments hex is", hex);
+            console.log("Debug: after assignments hex is", hex, " and stroke and filled indexes are",
+                Hexagon.strokeIndexData, Hexagon.filledIndexData
+            );
         });
     }
     /**

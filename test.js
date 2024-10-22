@@ -142,7 +142,10 @@ function paintHex(hex, color, gridIndexes, gridRowLength){
             removeByValue(Hexagon.strokeIndexData, index);
             
             //console.log("Debug: paintHex rowIndex columnIndex and index are:", rowIndex, columnIndex, index);
-            Hexagon.filledIndexData.push(index);
+            if(Hexagon.filledIndexData.indexOf(index) === -1){ //ensure we have no duplicate entry already
+                Hexagon.filledIndexData.push(index);
+            }
+            
         }
 
         hex.strokeEnabled = false; //disable stroke
@@ -165,7 +168,10 @@ function eraseHex(hex, gridIndexes, gridRowLength){
             let index = rowIndex * gridRowLength + columnIndex;
             
             removeByValue(Hexagon.filledIndexData, index);
-            Hexagon.strokeIndexData.push(index);
+
+            if(Hexagon.strokeIndexData.indexOf(index) === -1){ //ensure we have no duplicate entry already
+                Hexagon.strokeIndexData.push(index);
+            }
             hex.strokeEnabled = true; //enable stroke
             grid.renderGrid(gl);
         }
