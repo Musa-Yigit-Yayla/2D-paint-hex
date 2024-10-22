@@ -268,7 +268,7 @@ function removeByValue(array, item){
 }
 
 
-Camera.position.x -= 0.0;
-Camera.position.y -= 0.0;
+Camera.position.x += 22.4;
+Camera.position.y += 22.4;
 //Camera.zoomFactor = 2;
 console.log("Debug: initial mv matrix is:", Camera.getModelViewMatrix());

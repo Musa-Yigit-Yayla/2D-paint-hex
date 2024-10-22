@@ -10,7 +10,7 @@ export class Camera{
     /**
      * @return a model view matrix 4x4 which is with respect to current position and zoomFactor
      */
-    static getModelViewMatrix(){
+    /*static getModelViewMatrix(){
         let modelMatrix = Camera.getIdentityMatrix(4);
         let viewMatrix = Camera.getIdentityMatrix(4);
 
@@ -33,6 +33,30 @@ export class Camera{
         Camera.projectionMatrix = Camera.ortho(0, canvas.width, 0, canvas.height, -1, 1);
         console.log("Debug: after setting projectionMatrix we have", Camera.projectionMatrix);
     }*/
+        static getModelViewMatrix(){
+            let modelMatrix = Camera.getIdentityMatrix(3);
+            let viewMatrix = Camera.getIdentityMatrix(3);
+        
+            let sx = Camera.zoomFactor, sy = Camera.zoomFactor;
+            let tx = Camera.position.x, ty = Camera.position.y;
+        
+            Camera.scaleMat3(modelMatrix, sx, sy);
+            Camera.translateMat3(viewMatrix, -tx, -ty);
+        
+            let result = Camera.getIdentityMatrix(3);
+            Camera.multiply(viewMatrix, modelMatrix, result);
+            return result;
+        }
+        
+        // Adjust scaleMat and translateMat to work with 3x3 matrices
+        static scaleMat3(mat, sx, sy){
+            mat[0][0] *= sx;
+            mat[1][1] *= sy;
+        }
+        static translateMat3(mat, tx, ty){
+            mat[0][2] += tx;
+            mat[1][2] += ty;
+        }
 
     /**
      * 

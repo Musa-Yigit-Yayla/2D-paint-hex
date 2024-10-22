@@ -12,10 +12,11 @@ export class Hexagon{
             in vec3 fillColor;
             out vec3 color;
 
-            uniform mat4 modelViewMatrix;
+            uniform mat3 modelViewMatrix;
             void main(){
                 color = fillColor;
-                gl_Position = modelViewMatrix * vec4(vertPos, 0.0, 1.0); //later pass an attribute for z as well for layering
+                vec3 pos = modelViewMatrix * vec3(vertPos, 1.0);
+                gl_Position = vec4(pos.xy, 0.0, 1.0);
             }`,
         fs: 
             `#version 300 es
@@ -181,7 +182,7 @@ export class Hexagon{
         let mvLoc = gl.getUniformLocation(Hexagon.program, "modelViewMatrix");
         let mv = Camera.flattenMat(Camera.getModelViewMatrix());
         console.log("Debug: hexagon flattened mv is", mv);
-        gl.uniformMatrix4fv(mvLoc, false, mv);
+        gl.uniformMatrix3fv(mvLoc, false, mv);
 
         //now initalize stroke pos array from index array and pass it
         let strokePosArr = [];
