@@ -1,4 +1,5 @@
 //File for managing hexagon drawing
+import { Camera } from "./Camera.js";
 
 const DEBUG_LOG = false;
 
@@ -175,6 +176,12 @@ export class Hexagon{
         let fillColorPosLoc = gl.getAttribLocation(Hexagon.program, 'fillColor');
         gl.enableVertexAttribArray(fillColorPosLoc);
         gl.vertexAttribPointer(fillColorPosLoc, 3, gl.FLOAT, false, 0, 0);
+
+        //pass the uniform mv matrix to filled program
+        let mvLoc = gl.getUniformLocation(Hexagon.program, "modelViewMatrix");
+        let mv = Camera.flattenMat(Camera.getModelViewMatrix());
+        console.log("Debug: hexagon flattened mv is", mv);
+        gl.uniformMatrix4fv(mvLoc, false, mv);
 
         //now initalize stroke pos array from index array and pass it
         let strokePosArr = [];

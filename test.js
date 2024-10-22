@@ -1,6 +1,7 @@
 import { Hexagon } from "./hexagon.js";
 import { Grid } from "./grid.js";
 import { Operation } from "./operation.js";
+import { Camera } from "./Camera.js";
 
 let canvas = document.getElementById('canvas');
 let gl = canvas.getContext('webgl2');
@@ -189,11 +190,14 @@ setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
 let n = 20;
 
+//Camera.setProjectionMatrix(canvas); //set the projection matrix at the beginning
+
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);
 grid.initGrid(firstTopRight);
 Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
+
 
 let undoStack = []; //stack which will hold operations for undo
 let redoStack = [];//stack which will hold operations for redo
@@ -262,3 +266,9 @@ function removeByValue(array, item){
       array.splice(index, 1);
     }
 }
+
+
+Camera.position.x -= 0.0;
+Camera.position.y -= 0.0;
+//Camera.zoomFactor = 2;
+console.log("Debug: initial mv matrix is:", Camera.getModelViewMatrix());
