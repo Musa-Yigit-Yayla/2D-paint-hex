@@ -59,6 +59,7 @@ export class Operation{
      * Performs the given operation on the given grid instance
      */
     static redo(grid, operation){
+        console.log("Debug: redo received operation and grid", operation, grid);
         operation.hexIndexes.forEach(currHexIndex => {
             let rowIndex = Math.floor(currHexIndex / grid.grid.length);
             let columnIndex = currHexIndex % grid.grid.length;

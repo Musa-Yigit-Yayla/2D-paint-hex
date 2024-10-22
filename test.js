@@ -23,6 +23,8 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 function setEventHandlers(){
     canvas.onmousedown = e => {
         console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
+        const boundingRect = canvas.getBoundingClientRect();
+        const canvasX = e.x - boundingRect.left, canvasY = e.y - boundingRect.top;
         
         //reset the curr operation regardless of previously held data
         currOperation.hexIndexes = new Set();
@@ -33,7 +35,7 @@ function setEventHandlers(){
             console.log("Debug: left click down");
             leftMouseDown = true;
             let gridIndexes = [];
-            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
             let prevColor = currHex.color;
 
             if(currHex.strokeEnabled){
@@ -56,15 +58,18 @@ function setEventHandlers(){
             console.log("Debug: right click down");
             rightMouseDown = true;
             let gridIndexes = [];
-            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
             eraseHex(currHex, gridIndexes, grid.grid.length);
         }
     }
     canvas.onmousemove = e => {
+        const boundingRect = canvas.getBoundingClientRect();
+        const canvasX = e.x - boundingRect.left, canvasY = e.y - boundingRect.top;
+
         if(leftMouseDown){
             //console.log("Debug: left click move");
             let gridIndexes = [];
-            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
 
             //console.log("Debug: currHex onmousemove is", currHex);
 
@@ -99,7 +104,7 @@ function setEventHandlers(){
         else if(rightMouseDown){
             console.log("Debug: right click move");
             let gridIndexes = [];
-            let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
+            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
             eraseHex(currHex, gridIndexes, grid.grid.length);
         }
     }
@@ -169,7 +174,7 @@ function eraseHex(hex, gridIndexes, gridRowLength){
 
 setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
-let n = 20;
+let n = 6;
 
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);

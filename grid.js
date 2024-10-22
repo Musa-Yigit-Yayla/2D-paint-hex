@@ -67,6 +67,7 @@ export class Grid{ //flat top even
         let gridStartY = this.firstTopRight.y - ny / 2.0;
         let xIndex = Math.floor((eventX - gridStartX) / nx); //INCOMPLETE PROCEED
         let yIndex = Math.floor((eventY - gridStartY) / ny);
+        console.log("Debug: gridStartX, gridStartY are ", gridStartX, gridStartY);
 
         //console.log("Debug: eventX, eventY yield ", eventX, eventY, " and gridStart coordinates yield", gridStartX, gridStartY);
         console.log("Debug: xIndex and yIndex in getGridEntry yield " + xIndex + ", " + yIndex);

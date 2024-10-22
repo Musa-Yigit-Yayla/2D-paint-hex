@@ -346,7 +346,8 @@ export class Hexagon{
      * @return true when given point is contained by this hexagon or on a side of the hexagon
      */
     containsPoint(px, py){
-        DEBUG_LOG && console.log("Debug: containsPoint invoked with px, py and this.topRightVert as ", px, py, this.topRightVert);
+        console.log("Debug: containsPoint invoked with px, py and this.topRightVert as ", px, py, this.topRightVert);
+        console.log("Debug: conditions separated by && yield", px <= this.topRightVert.x + Hexagon.WORLD_SIDE_LENGTH / 2.0, px >= this.topRightVert.x - 1.5 * Hexagon.WORLD_SIDE_LENGTH, py >= this.topRightVert.y);
         return px <= this.topRightVert.x + Hexagon.WORLD_SIDE_LENGTH / 2.0 && px >= this.topRightVert.x - 1.5 * Hexagon.WORLD_SIDE_LENGTH && py >= this.topRightVert.y;
     }
 
