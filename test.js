@@ -28,15 +28,22 @@ function setEventHandlers(){
         currOperation.hexIndexes = new Set();
         currOperation.brushColor = grid.brush;
         currOperation.colorMap = new Map();
+        console.log("Grid after currOperation has been instantiated is", grid);
+
+        //deep copy grid into gridCopy for currect preservation of colors (brush going over itself may yield incorrect results)
+        gridCopy = grid.deepCopy();
 
         if(e.button === 0){ //left click
             console.log("Debug: left click down");
             leftMouseDown = true;
             let gridIndexes = [];
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
-            let prevColor = currHex.color;
 
-            if(currHex.strokeEnabled){
+            let gridCopyIndexes = [];
+            let currHexCopy = gridCopy.getGridEntry(e.x, e.y, gridCopyIndexes);
+            let prevColor = currHexCopy.color;
+
+            if(currHexCopy.strokeEnabled){
                 prevColor = -1;
             }
             paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
@@ -67,14 +74,17 @@ function setEventHandlers(){
             let currHex = grid.getGridEntry(e.x, e.y, gridIndexes);
 
             //console.log("Debug: currHex onmousemove is", currHex);
-
+            let gridCopyIndexes = [];
+            let currHexCopy = gridCopy.getGridEntry(e.x, e.y, gridCopyIndexes);
             let prevColor = null;
-            if(currHex !== null){
-                if(currHex.strokeEnabled){
+
+
+            if(currHexCopy !== null){
+                if(currHexCopy.strokeEnabled){
                     prevColor = -1;
                 }
                 else{
-                    prevColor = currHex.color;
+                    prevColor = currHexCopy.color;
                 }
             }
 
@@ -109,6 +119,7 @@ function setEventHandlers(){
             leftMouseDown = false;
             //add the currOperation onto the undo stack
             undoStack.push(currOperation);
+            console.log("Grid after currOperation has been finished is", grid);
         }
         else if(e.button === 2){
             rightMouseDown = false;
@@ -169,10 +180,11 @@ function eraseHex(hex, gridIndexes, gridRowLength){
 
 setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
-let n = 20;
+let n = 6;
 
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);
+let gridCopy = null; //will hold deep copy of the grid when necessary
 grid.initGrid(firstTopRight);
 Hexagon.setIndexData(gl, grid.grid);
 grid.renderGrid(gl);
@@ -244,3 +256,5 @@ function removeByValue(array, item){
       array.splice(index, 1);
     }
 }
+
+console.log("Grid at the test.js end line is", grid);

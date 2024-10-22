@@ -55,7 +55,7 @@ export class Grid{ //flat top even
      * Upon a mouse event, returns the corresponding hexagon in which this mouse event position is related to, if no hex is found returns null
      */
     getGridEntry(eventX, eventY, gridIndexes = null){
-        console.log("Debug: getGridEntry invoked with parameters respectively", eventX, eventY, gridIndexes);
+        //console.log("Debug: getGridEntry invoked with parameters respectively", eventX, eventY, gridIndexes);
         //we need to fetch the first top right vertex row which is less than or equal to our eventY
         //then we need to fetch the first top right vertex which our eventX can lie on
 
@@ -69,7 +69,7 @@ export class Grid{ //flat top even
         let yIndex = Math.floor((eventY - gridStartY) / ny);
 
         //console.log("Debug: eventX, eventY yield ", eventX, eventY, " and gridStart coordinates yield", gridStartX, gridStartY);
-        console.log("Debug: xIndex and yIndex in getGridEntry yield " + xIndex + ", " + yIndex);
+        //console.log("Debug: xIndex and yIndex in getGridEntry yield " + xIndex + ", " + yIndex);
         
         //now we should check the direct hexagon and its neighbours
         let currHex = this.grid[yIndex][xIndex];
@@ -99,5 +99,13 @@ export class Grid{ //flat top even
             }
         }
         return null;
+    }
+    //Returns a deep copy of this grid (hexagons and all other attributes are also deep copied)
+    deepCopy(){
+        let copy = new Grid(this.gridLength);
+        copy.initGrid(this.firstTopRight);
+        copy.brush = {r: this.brush.r, g: this.brush.g, b: this.brush.b};
+
+        return copy;
     }
 }
