@@ -11,9 +11,10 @@ export class Hexagon{
             in vec3 fillColor;
             out vec3 color;
 
+            uniform mat4 modelViewMatrix;
             void main(){
                 color = fillColor;
-                gl_Position = vec4(vertPos, 0.0, 1.0); //later pass an attribute for z as well for layering
+                gl_Position = modelViewMatrix * vec4(vertPos, 0.0, 1.0); //later pass an attribute for z as well for layering
             }`,
         fs: 
             `#version 300 es
