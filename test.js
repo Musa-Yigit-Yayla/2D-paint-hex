@@ -50,7 +50,9 @@ function setEventHandlers(){
             else{
                 if(!currOperation.hexIndexes.has(currIndex)){
                     currOperation.hexIndexes.add(currIndex);
-                    currOperation.colorMap.set(currIndex, prevColor);
+                    if(!currOperation.colorMap.has(currIndex)){
+                        currOperation.colorMap.set(currIndex, prevColor);
+                    }
                 }
             }
         }
@@ -82,6 +84,9 @@ function setEventHandlers(){
                     prevColor = currHex.color;
                 }
             }
+            else{
+                console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", gridIndexes);
+            }
 
             paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
 
@@ -97,7 +102,9 @@ function setEventHandlers(){
             }
             else if(!currOperation.hexIndexes.has(currIndex)){
                 currOperation.hexIndexes.add(currIndex);
-                currOperation.colorMap.set(currIndex, prevColor);
+                if(!currOperation.colorMap.has(currIndex)){
+                    currOperation.colorMap.set(currIndex, prevColor);
+                }
             }
             //console.log("Debug: pushed currIndex into currOperation", currIndex);
         }
@@ -180,7 +187,7 @@ function eraseHex(hex, gridIndexes, gridRowLength){
 
 setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
-let n = 6;
+let n = 20;
 
 let firstTopRight = {x: 30, y: 30};
 let grid = new Grid(n);

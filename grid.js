@@ -74,7 +74,7 @@ export class Grid{ //flat top even
         
         //now we should check the direct hexagon and its neighbours
         let currHex = this.grid[yIndex][xIndex];
-        if(currHex !== null && currHex.containsPoint(eventX - gridStartX, eventY - gridStartY)){
+        if(currHex !== null && currHex.containsPoint(eventX, eventY)){
             if(gridIndexes !== null){
                 gridIndexes.push(yIndex, xIndex);
             }
