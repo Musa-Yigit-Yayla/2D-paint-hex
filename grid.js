@@ -127,41 +127,43 @@ export class Grid{ //flat top even
 
             console.log("Debug: startIntersections are", startIntersections);
             let selectFirstIntersect = function() {
-                const result = [];
-                const dx = endRow - startRow, dy = endCol - startCol;
-            
-                const xi0 = startIntersections[0], yi0 = startIntersections[1];
-                const xi1 = startIntersections[2], yi1 = startIntersections[3];
-            
-                const epsilon = 1e-6;  // Small tolerance for floating-point comparisons
-            
-                // Calculate vectors from the center to the intersections
-                const vector0 = { dx: xi0 - centerX, dy: yi0 - centerY };
-                const vector1 = { dx: xi1 - centerX, dy: yi1 - centerY };
+                let result = [];
                 
-                // Normalize vectors to avoid scaling issues
-                const normalize = (v) => {
-                    const length = Math.sqrt(v.dx * v.dx + v.dy * v.dy);
-                    return { dx: v.dx / length, dy: v.dy / length };
-                };
+                // Center coordinates of the hexagon (for reference)
+                // Intersection points
+                let xi0 = startIntersections[0], yi0 = startIntersections[1]; // First intersection point
+                let xi1 = startIntersections[2], yi1 = startIntersections[3]; // Second intersection point
                 
-                const normalizedVec0 = normalize(vector0);
-                const normalizedVec1 = normalize(vector1);
-                const normalizedDir = normalize({ dx, dy });
+                // Given slope of the vector
+                
+                // Calculate the direction of the ray
+                let dx = 1;   // Positive x-direction for simplicity (normalized step)
+                let dy = slope;  // Corresponding y-step based on the slope
+                
+                // Parametric values (t0 and t1) for both intersection points:
+                // t = (xi - centerX) / dx and t = (yi - centerY) / dy
+                // We use both x and y differences now
             
-                // Compare normalized vectors using epsilon
-                if (Math.abs(normalizedVec1.dx - normalizedDir.dx) < epsilon && 
-                    Math.abs(normalizedVec1.dy - normalizedDir.dy) < epsilon) {
-                    result.push(xi1, yi1);
-                } else if (Math.abs(normalizedVec0.dx - normalizedDir.dx) < epsilon && 
-                           Math.abs(normalizedVec0.dy - normalizedDir.dy) < epsilon) {
-                    result.push(xi0, yi0);
+                // Compute "t" for first intersection point (xi0, yi0)
+                let t0x = (xi0 - centerX) / dx; // Along x-axis
+                let t0y = (yi0 - centerY) / dy; // Along y-axis
+                
+                // Compute "t" for second intersection point (xi1, yi1)
+                let t1x = (xi1 - centerX) / dx; // Along x-axis
+                let t1y = (yi1 - centerY) / dy; // Along y-axis
+                
+                // Now we need to select the intersection with the smallest valid t.
+                // We compare both x and y dimensions to find the intersection closest to the ray's direction.
+                
+                // Use the smaller t value, but it must match in both dimensions (consistent with the slope)
+                if (t0x < t1x && t0y < t1y) {
+                    result.push(xi0, yi0); // First intersection point is hit first
                 } else {
-                    console.log("RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                    result.push(xi1, yi1); // Second intersection point is hit first
                 }
-            
+                
                 return result;
-            };
+            }
             
             let firstIntersect = selectFirstIntersect();
             console.log("Debug: firstIntersect is ", firstIntersect);
