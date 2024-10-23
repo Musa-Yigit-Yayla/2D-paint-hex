@@ -201,55 +201,74 @@ export class Grid{ //flat top even
      * @param {*} slope of the line which passes from hexagon's center
      * @return a 1d array containing points of intersections with the given central line made with hexagon's edges [x0, y0, x1, y1]
      */
-    static findCenterIntersections(hex, slope) {
-        console.log("Debug: FCI invoked with slope", slope);
-        // Hexagon center
-        let centerX = hex.topRightVert.x - Hexagon.WORLD_SIDE_LENGTH / 2.0;
-        let centerY = hex.topRightVert.y + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2.0;
-        
-        console.log("Debug: FCI centerX,Y are", centerX, centerY);
+   /**
+ * @param {*} hex - hexagon instance (with topRight vertex coordinates)
+ * @param {*} slope - slope of the line passing through hexagon's center
+ * @return an array containing the two opposite intersection points with the hexagon's edges [x0, y0, x1, y1]
+ */
+static findCenterIntersections(hex, slope) {
+    const sideLength = Hexagon.WORLD_SIDE_LENGTH;
+    const { x: topRightX, y: topRightY } = hex.topRightVert;
 
-        // Hexagon vertices (6 vertices, clockwise from top-right)
-        /*let vertices = [
-            { x: hex.topRightVert.x, y: hex.topRightVert.y },  // top-right vertex
-            { x: hex.topRightVert.x - Hexagon.WORLD_SIDE_LENGTH, y: hex.topRightVert.y },  // top-left
-            { x: centerX - Hexagon.WORLD_SIDE_LENGTH / 2, y: centerY + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2 }, // bottom-left
-            { x: centerX, y: centerY + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) }, // bottom-center
-            { x: centerX + Hexagon.WORLD_SIDE_LENGTH / 2, y: centerY + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2 }, // bottom-right
-            { x: hex.topRightVert.x, y: hex.topRightVert.y + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2 } // right-center
-        ];*/
-        let vertices = hex.getWorldCoords();
-        console.log("Debug: FCİ vertices", vertices);
-    
-        let intersections = [];
-    
-        // Loop through each edge of the hexagon (each pair of consecutive vertices)
-        for (let i = 0; i < vertices.length; i++) {
-            let x0 = vertices[i].x;
-            let y0 = vertices[i].y;
-            let x1 = vertices[(i + 1) % vertices.length].x; // wrap around to first vertex after the last
-            let y1 = vertices[(i + 1) % vertices.length].y;
-    
-            // Compute the slope of the current hexagon edge
-            let edgeSlope = (y1 - y0) * 1.0 / (x1 - x0);
-    
-            // Find the intersection between the central line and this edge
-            let intersection = Grid.findLineIntersection(centerX, centerY, slope, x0, y0, edgeSlope);
-            console.log("Debug: FCI intersection at iteration i:", i, ", is", intersection);//, "where x0 y0 and x1 y11 respectively", x0, y0, x1, y1);
-    
-            // If the intersection lies on the edge, add it to the result
-            if (intersection && Grid.pointLiesOnLineSegment(x0, y0, x1, y1, intersection.x, intersection.y)) {
-                intersections.push(intersection.x, intersection.y);
-            }
-    
-            // Stop early if we've found two intersection points (as the line can intersect at most two edges)
-            if (intersections.length >= 4) {
-                break;
+    // Calculate hexagon center based on topRight
+    const centerX = topRightX - sideLength / 2;
+    const centerY = topRightY + (sideLength * Math.sqrt(3) / 2);
+
+    // Vertices of the hexagon
+    const vertices = [
+        { x: topRightX, y: topRightY },                               // Top-right
+        { x: topRightX - sideLength, y: topRightY },                  // Top-left
+        { x: topRightX - sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) }, // Bottom-left
+        { x: topRightX + sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) }, // Bottom-right
+        { x: topRightX + sideLength, y: topRightY },                  // Right-bottom
+        { x: topRightX, y: topRightY + (sideLength * Math.sqrt(3)) }, // Bottom-center
+    ];
+
+    // For each edge (pair of adjacent vertices), calculate the intersection point
+    let intersections = [];
+    for (let i = 0; i < vertices.length; i++) {
+        let v1 = vertices[i];
+        let v2 = vertices[(i + 1) % vertices.length]; // Wrap around at the last vertex
+
+        let edgeSlope = (v2.y - v1.y) / (v2.x - v1.x);
+
+        // Find intersection point between the line (center, slope) and the edge (v1, v2)
+        let intersection = this.findLineIntersection(centerX, centerY, slope, v1.x, v1.y, edgeSlope);
+
+        // Check if the intersection lies on the edge
+        if (this.pointLiesOnLineSegment(v1.x, v1.y, v2.x, v2.y, intersection.x, intersection.y)) {
+            intersections.push(intersection);
+        }
+    }
+
+    // Now we have the intersections, find the two farthest apart (these are the opposite edges)
+    if (intersections.length >= 2) {
+        let [p1, p2] = this.findFarthestPoints(intersections);
+        return [p1.x, p1.y, p2.x, p2.y];
+    }
+
+    return null; // Return null if intersections are not found properly
+}
+
+/**
+ * Helper function to find the farthest points from an array of points.
+ */
+static findFarthestPoints(points) {
+    let maxDistance = 0;
+    let farthestPair = [points[0], points[1]];
+
+    for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+            let dist = Math.sqrt(Math.pow(points[i].x - points[j].x, 2) + Math.pow(points[i].y - points[j].y, 2));
+            if (dist > maxDistance) {
+                maxDistance = dist;
+                farthestPair = [points[i], points[j]];
             }
         }
-    
-        return intersections;
     }
+
+    return farthestPair;
+}
     static findLineIntersection(x1, y1, m1, x2, y2, m2) {
         // Check if the lines are parallel
         if (m1 === m2) {
