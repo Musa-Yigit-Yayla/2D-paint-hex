@@ -101,4 +101,82 @@ export class Grid{ //flat top even
         }
         return null;
     }
+
+    /**
+     * 
+     * @param {*} startRow 
+     * @param {*} startCol 
+     * @param {*} endRow 
+     * @param {*} endCol 
+     * 
+     * @return an array containing {rs, cs, r1, c1, ... re, ce} where ri represents ith row and cj represents jth row which results in our line
+     */
+    static locateLineIndexes(startRow, startCol, endRow, endCol){
+        let result = [];
+
+        if(startRow === endRow && startCol === endCol){
+            result.push(startRow, startCol);
+        }
+        else{
+
+        }
+    }
+    /**
+     * 
+     * @param {*} topRight of the current hexagon (in world coordinates) (object with x and y attributes)
+     * @param {*} entryX (entry coordinate of the line in world coordinates)
+     * @param {*} entryY 
+     * @param {*} slope slope of the movement line
+     * @return 0, 1, 2, 3, 4, 5 which denotes intersected line (return -1 on unexpected result)
+     */
+    static getNextAdjacent(topRight, entryX, entryY, slope){
+        let result = -1;
+
+        //start from top right and move counter clockwise
+        let currLine = 0; //starting vertex number
+
+        let vertPositions = Hexagon.VERTICES;
+        for(let i = 0; i < vertPositions.length; i += 2){
+            vertPositions[i] += topRight.x;
+            vertPositions[i + 1] += topRight.y;
+        }
+        while(currLine < 5){
+            let lx0 = vertPositions[currLine], ly0 = vertPositions[currLine + 1];
+            let lx1 = vertPositions[currLine + 2], ly1 = vertPositions[currLine + 3];
+
+            let currSlope = (ly1 - ly0) * 1.0 / (lx1 - lx0); //we haven o case where slope is infinite due to our hexagon type choice
+            let intersection = Grid.findLineIntersection(entryX, entryY, slope, lx0, ly0, currSlope);
+
+            //now we must check whether intersection point lies between our current line segment
+            let lengthX0 = Math.abs(lx1 - lx0), lengthY0 = Math.abs(ly1 - ly0); //absolute coordinate lengths of current line segment
+            let lengthX1 = Math.abs(lx0 - entryX), lengthY1 = Math.abs(ly0 - entryY);
+            let lengthX2 = Math.abs(lx1 - entryX), lengthY2 = Math.abs(ly1 - entryY);
+
+            if(intersection !== null && (lengthX1 <= lengthX0 && lengthX2 <= lengthX0) && (lengthY1 <= lengthY0 && lengthY2 <= lengthY0) &&
+                result !==){ //second checks we have intersection nice
+                result = currLine;
+                break;
+            }
+
+            currLine++;
+        }
+    }
+    static findLineIntersection(x1, y1, m1, x2, y2, m2) {
+        // Check if the lines are parallel
+        if (m1 === m2) {
+            return null;  // Parallel lines do not intersect (or are coincident)
+        }
+    
+        // Solve for x using the equation m1 * (x - x1) + y1 = m2 * (x - x2) + y2
+        let x = ((m2 * x2 - m1 * x1) + (y1 - y2)) / (m2 - m1);
+    
+        // Now substitute x back into one of the line equations to find y
+        let y = m1 * (x - x1) + y1;
+    
+        // Return the intersection point (x, y)
+        return { x: x, y: y };
+    }
+    static pointLiesOnLine(){
+        
+    }
 }
