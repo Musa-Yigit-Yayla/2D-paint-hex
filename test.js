@@ -25,31 +25,36 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 
 function setEventHandlers(){
     const boundingRect = canvas.getBoundingClientRect();
-    let startX, startY;
 
     if(zoomChecked){
+        let startX, startY;
+        let mouseMoveEnabled = false;
+
         canvas.onmousedown = e => {
             startX = e.x - boundingRect.left;
             startY = e.y - boundingRect.top; //in canvas coordinates
+            mouseMoveEnabled = true;
         }
         canvas.onmousemove = e => {
-            let currX = e.x - boundingRect.left;
-            let currY = e.y - boundingRect.top;
+            if(mouseMoveEnabled){
+                let currX = e.x - boundingRect.left;
+                let currY = e.y - boundingRect.top;
 
-            //now update camera translation wrt to moved distance
-            let xFactor = (currX - startX) / canvas.width;
-            let yFactor = (currY - startY) / canvas.height;
+                //now update camera translation wrt to moved distance
+                let xFactor = (currX - startX) / canvas.width;
+                let yFactor = (currY - startY) / canvas.height;
 
-            console.log("Debug: zoomChecked mousemove yields x and y factors", xFactor, yFactor);
+                console.log("Debug: zoomChecked mousemove yields x and y factors", xFactor, yFactor);
 
-            Camera.position.x = xFactor;
-            Camera.position.y = yFactor;
+                Camera.position.x = -xFactor;
+                Camera.position.y = yFactor;
 
-            //force re-render
-            grid.renderGrid(gl);
+                //force re-render
+                grid.renderGrid(gl);
+            }
         }
         canvas.onmouseup = e => {
-            //empty stub for resetting mouse up event
+            mouseMoveEnabled = false;
         }
     }
     //proceed with else ifs for other functionalities
