@@ -126,22 +126,43 @@ export class Grid{ //flat top even
             let centerY = currHex.topRightVert.y + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2.0;
 
             console.log("Debug: startIntersections are", startIntersections);
-            let selectFirstIntersect = function(){
-                let result = [];
-                let dx = endRow - startRow, dy = endCol - startCol;
+            let selectFirstIntersect = function() {
+                const result = [];
+                const dx = endRow - startRow, dy = endCol - startCol;
             
-                let xi0 = startIntersections[0], yi0 = startIntersections[1], xi1 = startIntersections[2], yi1 = startIntersections[3];
-                if(xi1 - centerX === dx && yi1 - centerY === dy){
+                const xi0 = startIntersections[0], yi0 = startIntersections[1];
+                const xi1 = startIntersections[2], yi1 = startIntersections[3];
+            
+                const epsilon = 1e-6;  // Small tolerance for floating-point comparisons
+            
+                // Calculate vectors from the center to the intersections
+                const vector0 = { dx: xi0 - centerX, dy: yi0 - centerY };
+                const vector1 = { dx: xi1 - centerX, dy: yi1 - centerY };
+                
+                // Normalize vectors to avoid scaling issues
+                const normalize = (v) => {
+                    const length = Math.sqrt(v.dx * v.dx + v.dy * v.dy);
+                    return { dx: v.dx / length, dy: v.dy / length };
+                };
+                
+                const normalizedVec0 = normalize(vector0);
+                const normalizedVec1 = normalize(vector1);
+                const normalizedDir = normalize({ dx, dy });
+            
+                // Compare normalized vectors using epsilon
+                if (Math.abs(normalizedVec1.dx - normalizedDir.dx) < epsilon && 
+                    Math.abs(normalizedVec1.dy - normalizedDir.dy) < epsilon) {
                     result.push(xi1, yi1);
-                }
-                else if(xi0 - centerX === dx && yi0 - centerY === dy){
+                } else if (Math.abs(normalizedVec0.dx - normalizedDir.dx) < epsilon && 
+                           Math.abs(normalizedVec0.dy - normalizedDir.dy) < epsilon) {
                     result.push(xi0, yi0);
-                }
-                else{
+                } else {
                     console.log("RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 }
+            
                 return result;
-            }
+            };
+            
             let firstIntersect = selectFirstIntersect();
             console.log("Debug: firstIntersect is ", firstIntersect);
 
@@ -173,9 +194,9 @@ export class Grid{ //flat top even
             vertPositions[i] += topRight.x;
             vertPositions[i + 1] += topRight.y;
         }
-        while(currLine < 5){ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! HERE WE NEED 6 AS WE DO NOT CONSIDER THE P6-P0 LINE WITH 5 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        while(currLine < 6){ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! HERE WE NEED 6 AS WE DO NOT CONSIDER THE P6-P0 LINE WITH 5 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             let lx0 = vertPositions[currLine], ly0 = vertPositions[currLine + 1];
-            let lx1 = vertPositions[currLine + 2], ly1 = vertPositions[currLine + 3];
+            let lx1 = vertPositions[(currLine + 2) % 12], ly1 = vertPositions[(currLine + 3) % 12]; //for connecting last vertex to first
 
             let currSlope = (ly1 - ly0) * 1.0 / (lx1 - lx0); //we haven o case where slope is infinite due to our hexagon type choice
             let intersection = Grid.findLineIntersection(entryX, entryY, slope, lx0, ly0, currSlope);
