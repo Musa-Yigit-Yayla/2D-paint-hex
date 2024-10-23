@@ -42,9 +42,12 @@ export class Camera{
         
             Camera.scaleMat3(modelMatrix, sx, sy);
             Camera.translateMat3(viewMatrix, -tx, -ty);
+            console.log("Debug: scaled model matrix is", modelMatrix, " with sx and sy respectively", sx, sy);
+            console.log("Debug: translated view matrix is ", viewMatrix, " with tx and ty respectively", tx, ty);
         
             let result = Camera.getIdentityMatrix(3);
             Camera.multiply(viewMatrix, modelMatrix, result);
+            console.log("Debug: resulting mv matrix is", result);
             return result;
         }
         

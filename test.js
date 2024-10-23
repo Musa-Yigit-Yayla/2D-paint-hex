@@ -188,7 +188,7 @@ function eraseHex(hex, gridIndexes, gridRowLength){
 
 setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
-let n = 20;
+let n = 10;
 
 //Camera.setProjectionMatrix(canvas); //set the projection matrix at the beginning
 
@@ -268,7 +268,7 @@ function removeByValue(array, item){
 }
 
 
-Camera.position.x += 22.4;
-Camera.position.y += 22.4;
-//Camera.zoomFactor = 2;
+Camera.position.x += 0.4;
+Camera.position.y += 0.8;
+Camera.zoomFactor = 2;
 console.log("Debug: initial mv matrix is:", Camera.getModelViewMatrix());

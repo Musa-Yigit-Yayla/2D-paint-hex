@@ -13,9 +13,10 @@ export class Hexagon{
             out vec3 color;
 
             uniform mat3 modelViewMatrix;
+            uniform float xFactor, yFactor; //factors for x y camera movement
             void main(){
                 color = fillColor;
-                vec3 pos = modelViewMatrix * vec3(vertPos, 1.0);
+                vec3 pos = modelViewMatrix * vec3(vertPos.x - xFactor, vertPos.y - yFactor, 1.0);
                 gl_Position = vec4(pos.xy, 0.0, 1.0);
             }`,
         fs: 
@@ -35,8 +36,10 @@ export class Hexagon{
             
             in vec2 vertPos;
             
+            uniform mat3 modelViewMatrix;
             void main(){
-                gl_Position = vec4(vertPos, 0.0, 1.0);
+                vec3 pos = modelViewMatrix * vec3(vertPos, 1.0);
+                gl_Position = vec4(pos.xy, 0.0, 1.0);
                 //gl_PointSize = 5.0;
             }
             `,
@@ -184,6 +187,13 @@ export class Hexagon{
         console.log("Debug: hexagon flattened mv is", mv);
         gl.uniformMatrix3fv(mvLoc, false, mv);
 
+        //pass uniform x y factors of camera pos
+        let xFactorLoc = gl.getUniformLocation(Hexagon.program, "xFactor");
+        let yFactorLoc = gl.getUniformLocation(Hexagon.program, "yFactor");
+
+        gl.uniform1f(xFactorLoc, -Camera.position.x);
+        gl.uniform1f(yFactorLoc, -Camera.position.y);
+
         //now initalize stroke pos array from index array and pass it
         let strokePosArr = [];
         for(let i = 0; i < Hexagon.strokeIndexData.length; i++){
@@ -213,6 +223,10 @@ export class Hexagon{
         let strokeVertLoc = gl.getAttribLocation(Hexagon.programStroke, 'vertPos');
         gl.enableVertexAttribArray(strokeVertLoc);
         gl.vertexAttribPointer(strokeVertLoc, 2, gl.FLOAT, false, 0, 0);
+
+        //pass the mv matrix
+        let mvMatrixLoc = gl.getUniformLocation(Hexagon.programStroke, "modelViewMatrix");
+        gl.uniformMatrix3fv(mvMatrixLoc, false, mv);
 
         gl.drawArrays(gl.LINES, 0, strokePosArr.length / 2);
     }
