@@ -337,6 +337,7 @@ function removeByValue(array, item){
 }
 
 Grid.locateLineIndexes(0, 0, 6, 6, grid);
+//console.log("Debug: Hexagon.VERT_POS & Hexagon.VERTICES are", Hexagon.VERT_POS, Hexagon.VERTICES);
 
 /*Camera.position.x += 0.4;
 Camera.position.y += 0.8;

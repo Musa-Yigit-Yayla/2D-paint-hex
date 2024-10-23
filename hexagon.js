@@ -371,6 +371,35 @@ export class Hexagon{
 
     /**
      * 
+     * @returns world coords of this hexagon as an array of objects for each vertex
+     */
+    getWorldCoords(){
+        const sideLength = Hexagon.WORLD_SIDE_LENGTH;
+        let topRightX = this.topRightVert.x, topRightY = this.topRightVert.y
+    
+        return [
+            // Top-right vertex (starting point)
+            { x: topRightX, y: topRightY },
+    
+            // Top-left vertex
+            { x: topRightX - sideLength, y: topRightY },
+    
+            // Bottom-left vertex
+            { x: topRightX - sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) },
+    
+            // Bottom-right vertex
+            { x: topRightX + sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) },
+    
+            // Right-bottom vertex
+            { x: topRightX + sideLength, y: topRightY },
+    
+            // Right-center vertex (directly below)
+            { x: topRightX, y: topRightY + sideLength * Math.sqrt(3) }
+        ];
+    }
+
+    /**
+     * 
      * @param {*} px 
      * @param {*} py coordinates of a point in world coordinate system
      * @return true when given point is contained by this hexagon or on a side of the hexagon
