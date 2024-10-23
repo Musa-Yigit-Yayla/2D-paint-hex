@@ -147,19 +147,20 @@ export class Grid{ //flat top even
             let currSlope = (ly1 - ly0) * 1.0 / (lx1 - lx0); //we haven o case where slope is infinite due to our hexagon type choice
             let intersection = Grid.findLineIntersection(entryX, entryY, slope, lx0, ly0, currSlope);
 
-            //now we must check whether intersection point lies between our current line segment
-            let lengthX0 = Math.abs(lx1 - lx0), lengthY0 = Math.abs(ly1 - ly0); //absolute coordinate lengths of current line segment
-            let lengthX1 = Math.abs(lx0 - entryX), lengthY1 = Math.abs(ly0 - entryY);
-            let lengthX2 = Math.abs(lx1 - entryX), lengthY2 = Math.abs(ly1 - entryY);
+            if(intersection.x === entryX && intersection.y === entryY){
+                console.log("HEEEEEEEEEEEEEEEEEEEEEEEEEEEY");
+            }
 
-            if(intersection !== null && (lengthX1 <= lengthX0 && lengthX2 <= lengthX0) && (lengthY1 <= lengthY0 && lengthY2 <= lengthY0) &&
-                result !==){ //second checks we have intersection nice
+            //now we must check whether intersection point lies between our current line segment
+            if(intersection !== null && Grid.pointLiesOnLineSegment(lx0, ly0, lx1, ly1, intersection.x, intersection.y)){ //IT COULD BE PROBLEM IF WE GO OUT OF THE LINE
+                //WE CAME FROM
                 result = currLine;
                 break;
             }
 
             currLine++;
         }
+        return result;
     }
     static findLineIntersection(x1, y1, m1, x2, y2, m2) {
         // Check if the lines are parallel
@@ -176,7 +177,31 @@ export class Grid{ //flat top even
         // Return the intersection point (x, y)
         return { x: x, y: y };
     }
-    static pointLiesOnLine(){
-        
+    /**
+     * 
+     * @param {*} x0 
+     * @param {*} y0 
+     * @param {*} x1 
+     * @param {*} y1 
+     * @param {*} px 
+     * @param {*} py 
+     * 
+     * given x0 and x1 must not be equal to each other
+     */
+    static pointLiesOnLineSegment(x0, y0, x1, y1, px, py){
+        if((px === x0 && py === y0) || (px === x1 && py === y1)){
+            return true;
+        }
+        const epsilon = 1e-9; // Precision threshold
+        let s0 = (y0 - y1) * 1.0 / (x0 - x1);
+        let s1 = (y0 - py) * 1.0 / (x0 - px);
+
+        let lengthX0 = Math.abs(x1 - x0), lengthY0 = Math.abs(y1 - y0); //absolute coordinate lengths of current line segment
+        let lengthX1 = Math.abs(x0 - px), lengthY1 = Math.abs(y0 - py);
+        let lengthX2 = Math.abs(x1 - px), lengthY2 = Math.abs(y1 - py);
+
+        let withinSegment = (lengthX1 <= lengthX0 && lengthX2 <= lengthX0) && (lengthY1 <= lengthY0 && lengthY2 <= lengthY0);
+
+        return (Math.abs(s1 - s0) < epsilon && withinSegment);
     }
 }
