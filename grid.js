@@ -108,17 +108,50 @@ export class Grid{ //flat top even
      * @param {*} startCol 
      * @param {*} endRow 
      * @param {*} endCol 
+     * @param grid grid instance
      * 
      * @return an array containing {rs, cs, r1, c1, ... re, ce} where ri represents ith row and cj represents jth row which results in our line
      */
-    static locateLineIndexes(startRow, startCol, endRow, endCol){
+    static locateLineIndexes(startRow, startCol, endRow, endCol, grid){
         let result = [];
 
         if(startRow === endRow && startCol === endCol){
             result.push(startRow, startCol);
         }
         else{
+            let slope = (startCol - endCol) * 1.0 / (startRow - endRow);
+            let currHex = grid.grid[startRow][startCol];
+            let startIntersections = this.findCenterIntersections(currHex, slope);
+            let centerX = currHex.topRightVert.x - Hexagon.WORLD_SIDE_LENGTH / 2.0; 
+            let centerY = currHex.topRightVert.y + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2.0;
 
+            console.log("Debug: startIntersections are", startIntersections);
+            let selectFirstIntersect = function(){
+                let result = [];
+                let dx = endRow - startRow, dy = endCol - startCol;
+            
+                let xi0 = startIntersections[0], yi0 = startIntersections[1], xi1 = startIntersections[2], yi1 = startIntersections[3];
+                if(xi1 - centerX === dx && yi1 - centerY === dy){
+                    result.push(xi1, yi1);
+                }
+                else if(xi0 - centerX === dx && yi0 - centerY === dy){
+                    result.push(xi0, yi0);
+                }
+                else{
+                    console.log("RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                }
+                return result;
+            }
+            let firstIntersect = selectFirstIntersect();
+            console.log("Debug: firstIntersect is ", firstIntersect);
+
+
+            //entry coords which pierced our hexagon first
+            //let nextAdj = Grid.getNextAdjacent(currHex.topRightVert, currHex.topRightVert.x - Hexagon.WORLD_SIDE_LENGTH / 2.0, 
+            //                                    currHex.topRightVert.y + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2.0, slope);
+            let firstAdj = Grid.getNextAdjacent(currHex.topRightVert, firstIntersect[0], 
+                                                firstIntersect[1], slope);
+            console.log("Debug: firstAdj is", firstAdj);
         }
     }
     /**
@@ -140,7 +173,7 @@ export class Grid{ //flat top even
             vertPositions[i] += topRight.x;
             vertPositions[i + 1] += topRight.y;
         }
-        while(currLine < 5){
+        while(currLine < 5){ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! HERE WE NEED 6 AS WE DO NOT CONSIDER THE P6-P0 LINE WITH 5 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             let lx0 = vertPositions[currLine], ly0 = vertPositions[currLine + 1];
             let lx1 = vertPositions[currLine + 2], ly1 = vertPositions[currLine + 3];
 
@@ -161,6 +194,49 @@ export class Grid{ //flat top even
             currLine++;
         }
         return result;
+    }
+    /**
+     * 
+     * @param {*} hex hexagon instance
+     * @param {*} slope of the line which passes from hexagon's center
+     * @return a 1d array containing points of intersections with the given central line made with hexagon's edges [x0, y0, x1, y1]
+     */
+    static findCenterIntersections(hex, slope){
+        let centerX = hex.topRightVert.x - Hexagon.WORLD_SIDE_LENGTH / 2.0; 
+        let centerY = hex.topRightVert.y + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2.0;
+
+        let vertices = Hexagon.VERTICES;
+        for(let i = 0; i < vertices.length; i += 2){
+            vertices[i] += hex.topRightVert.x;
+            vertices[i + 1] += hex.topRightVert.y;
+        }
+
+        let intersections = [];
+        // Loop through each edge of the hexagon (each pair of consecutive vertices)
+        for (let i = 0; i < vertices.length; i++) {
+            let x0 = vertices[i].x;
+            let y0 = vertices[i].y;
+            let x1 = vertices[(i + 1) % vertices.length].x; // wrap around to first vertex after the last
+            let y1 = vertices[(i + 1) % vertices.length].y;
+
+            // Compute the slope of the current hexagon edge
+            let edgeSlope = (y1 - y0) / (x1 - x0);
+
+            // Find the intersection between the central line and this edge
+            let intersection = Grid.findLineIntersection(centerX, centerY, slope, x0, y0, edgeSlope);
+
+            // If the intersection lies on the edge, add it to the result
+            if (intersection && Grid.pointLiesOnLineSegment(x0, y0, x1, y1, intersection.x, intersection.y)) {
+                intersections.push(intersection.x, intersection.y);
+            }
+
+            // Stop early if we've found two intersection points (as the line can intersect at most two edges)
+            if (intersections.length >= 4) {
+                break;
+            }
+        }
+
+        return intersections;
     }
     static findLineIntersection(x1, y1, m1, x2, y2, m2) {
         // Check if the lines are parallel

@@ -336,6 +336,7 @@ function removeByValue(array, item){
     }
 }
 
+Grid.locateLineIndexes(0, 0, 6, 6, grid);
 
 /*Camera.position.x += 0.4;
 Camera.position.y += 0.8;
