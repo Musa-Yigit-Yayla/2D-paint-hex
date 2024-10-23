@@ -11,6 +11,8 @@ canvas.addEventListener('contextmenu', function(event) {
     event.preventDefault(); // Prevent the default browser menu from appearing
 });
 let leftMouseDown = false, rightMouseDown = false;
+let zoomChecked = false; //will be used to enable zoom and its event handling etc.
+const ZOOM_STEP = 0.2;
 
 //WE NEED 1X1 ratio in canvas!
 console.log("Debug: canvas width and height are", canvas.width, canvas.height);
@@ -22,109 +24,115 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 //hex.render(gl);
 
 function setEventHandlers(){
-    canvas.onmousedown = e => {
-        console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
-        const boundingRect = canvas.getBoundingClientRect();
-        const canvasX = e.x - boundingRect.left, canvasY = e.y - boundingRect.top;
+    if(zoomChecked){
         
-        //reset the curr operation regardless of previously held data
-        currOperation.hexIndexes = new Set();
-        currOperation.brushColor = grid.brush;
-        currOperation.colorMap = new Map();
+    }
+    //proceed with else ifs for other functionalities
+    else{
+        canvas.onmousedown = e => {
+            console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
+            const boundingRect = canvas.getBoundingClientRect();
+            const canvasX = e.x - boundingRect.left, canvasY = e.y - boundingRect.top;
+            
+            //reset the curr operation regardless of previously held data
+            currOperation.hexIndexes = new Set();
+            currOperation.brushColor = grid.brush;
+            currOperation.colorMap = new Map();
 
-        if(e.button === 0){ //left click
-            console.log("Debug: left click down");
-            leftMouseDown = true;
-            let gridIndexes = [];
-            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
-            let prevColor = currHex.color;
+            if(e.button === 0){ //left click
+                console.log("Debug: left click down");
+                leftMouseDown = true;
+                let gridIndexes = [];
+                let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+                let prevColor = currHex.color;
 
-            if(currHex.strokeEnabled){
-                prevColor = -1;
+                if(currHex.strokeEnabled){
+                    prevColor = -1;
+                }
+                paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+
+                let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
+                if(isNaN(currIndex)){
+                    console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
+                }
+                else{
+                    if(!currOperation.hexIndexes.has(currIndex)){
+                        currOperation.hexIndexes.add(currIndex);
+                        if(!currOperation.colorMap.has(currIndex)){
+                            currOperation.colorMap.set(currIndex, prevColor);
+                        }
+                    }
+                }
             }
-            paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
-
-            let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
-            if(isNaN(currIndex)){
-                console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes");
+            else if(e.button === 2){ //right click
+                console.log("Debug: right click down");
+                rightMouseDown = true;
+                let gridIndexes = [];
+                let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+                eraseHex(currHex, gridIndexes, grid.grid.length);
             }
-            else{
-                if(!currOperation.hexIndexes.has(currIndex)){
+        }
+        canvas.onmousemove = e => {
+            const boundingRect = canvas.getBoundingClientRect();
+            const canvasX = e.x - boundingRect.left, canvasY = e.y - boundingRect.top;
+
+            if(leftMouseDown){
+                //console.log("Debug: left click move");
+                let gridIndexes = [];
+                let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+
+                //console.log("Debug: currHex onmousemove is", currHex);
+
+                let prevColor = null;
+                if(currHex !== null){
+                    if(currHex.strokeEnabled){
+                        prevColor = -1;
+                    }
+                    else{
+                        prevColor = currHex.color;
+                    }
+                }
+                else{
+                    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", gridIndexes);
+                }
+
+                paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
+
+                let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
+                //console.log("Debug: gridIndexes and grid.grid.length are respectively", gridIndexes, grid.grid.length);
+
+                
+                //console.log("Debug: prevColor and currHex are", prevColor, currHex);
+
+                if(isNaN(currIndex)){
+                    console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes.\nAlso gridIndexes are", gridIndexes);
+                    console.log("Debug: retrieved gridIndexes with event.x, event.y is", gridIndexes, e.x, e.y);
+                }
+                else if(!currOperation.hexIndexes.has(currIndex)){
                     currOperation.hexIndexes.add(currIndex);
                     if(!currOperation.colorMap.has(currIndex)){
                         currOperation.colorMap.set(currIndex, prevColor);
                     }
                 }
+                //console.log("Debug: pushed currIndex into currOperation", currIndex);
+            }
+            else if(rightMouseDown){
+                console.log("Debug: right click move");
+                let gridIndexes = [];
+                let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+                eraseHex(currHex, gridIndexes, grid.grid.length);
             }
         }
-        else if(e.button === 2){ //right click
-            console.log("Debug: right click down");
-            rightMouseDown = true;
-            let gridIndexes = [];
-            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
-            eraseHex(currHex, gridIndexes, grid.grid.length);
-        }
-    }
-    canvas.onmousemove = e => {
-        const boundingRect = canvas.getBoundingClientRect();
-        const canvasX = e.x - boundingRect.left, canvasY = e.y - boundingRect.top;
-
-        if(leftMouseDown){
-            //console.log("Debug: left click move");
-            let gridIndexes = [];
-            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
-
-            //console.log("Debug: currHex onmousemove is", currHex);
-
-            let prevColor = null;
-            if(currHex !== null){
-                if(currHex.strokeEnabled){
-                    prevColor = -1;
-                }
-                else{
-                    prevColor = currHex.color;
-                }
+        canvas.onmouseup = e => {
+            console.log("Debug: currOperation yielded", currOperation);
+            if(e.button === 0){
+                leftMouseDown = false;
+                //add the currOperation onto the undo stack
+                undoStack.push(currOperation);
             }
-            else{
-                console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", gridIndexes);
+            else if(e.button === 2){
+                rightMouseDown = false;
             }
-
-            paintHex(currHex, grid.brush, gridIndexes, grid.grid.length);
-
-            let currIndex = gridIndexes[0] * grid.grid.length + gridIndexes[1];
-            //console.log("Debug: gridIndexes and grid.grid.length are respectively", gridIndexes, grid.grid.length);
-
-            
-            //console.log("Debug: prevColor and currHex are", prevColor, currHex);
-
-            if(isNaN(currIndex)){
-                console.log("Exception: currIndex yields NaN, hence cannot insert into operation indexes.\nAlso gridIndexes are", gridIndexes);
-                console.log("Debug: retrieved gridIndexes with event.x, event.y is", gridIndexes, e.x, e.y);
-            }
-            else if(!currOperation.hexIndexes.has(currIndex)){
-                currOperation.hexIndexes.add(currIndex);
-                if(!currOperation.colorMap.has(currIndex)){
-                    currOperation.colorMap.set(currIndex, prevColor);
-                }
-            }
-            //console.log("Debug: pushed currIndex into currOperation", currIndex);
-        }
-        else if(rightMouseDown){
-            console.log("Debug: right click move");
-            let gridIndexes = [];
-            let currHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
-            eraseHex(currHex, gridIndexes, grid.grid.length);
-        }
-    }
-    canvas.onmouseup = e => {
-        console.log("Debug: currOperation yielded", currOperation);
-        if(e.button === 0){
-            leftMouseDown = false;
-            //add the currOperation onto the undo stack
-            undoStack.push(currOperation);
-        }
-        else if(e.button === 2){
-            rightMouseDown = false;
         }
     }
 }
@@ -251,6 +259,35 @@ function redoHandler(e){
         undoStack.push(operation); //push to the redo stack
     }
 }
+function cbZoomHandler(e){
+    zoomChecked = cbZoom.checked;
+    if(!zoomChecked){
+        Camera.zoomFactor = 1.0; //reset to 1
+    }
+    setEventHandlers(); //reset event handlers (for mouse functionality changes)
+    document.getElementById("zoomLabel").textContent = Camera.zoomFactor;
+    grid.renderGrid(gl);//force re-render
+}
+function btZoomInHandler(e){
+    if(zoomChecked){
+        Camera.zoomFactor += ZOOM_STEP;
+        document.getElementById("zoomLabel").textContent = Camera.zoomFactor;
+        grid.renderGrid(gl);//force re-render
+    }
+}
+function btZoomOutHandler(e){
+    if(zoomChecked){
+        Camera.zoomFactor -= ZOOM_STEP;
+        if(Camera.zoomFactor < 0.2){
+            Camera.zoomFactor = 0.2; //hardcode
+        }
+        document.getElementById("zoomLabel").textContent = Camera.zoomFactor;
+        grid.renderGrid(gl);//force re-render
+    }
+}
+
+let cbZoom = document.getElementById("cbZoom");
+cbZoom.addEventListener("change", cbZoomHandler);
 
 // Attach the handler to multiple sliders
 document.getElementById("blueSlider").addEventListener("change", slideHandler);
@@ -258,6 +295,8 @@ document.getElementById("redSlider").addEventListener("change", slideHandler);
 document.getElementById("greenSlider").addEventListener("change", slideHandler);
 document.getElementById("btUndo").addEventListener("click", undoHandler);
 document.getElementById("btRedo").addEventListener("click", redoHandler);
+document.getElementById("btZoomIn").addEventListener("click", btZoomInHandler);
+document.getElementById("btZoomOut").addEventListener("click", btZoomOutHandler);
 
 //removes a given element by value from the given array
 function removeByValue(array, item){
@@ -268,7 +307,7 @@ function removeByValue(array, item){
 }
 
 
-Camera.position.x += 0.4;
+/*Camera.position.x += 0.4;
 Camera.position.y += 0.8;
 Camera.zoomFactor = 2;
-console.log("Debug: initial mv matrix is:", Camera.getModelViewMatrix());
+console.log("Debug: initial mv matrix is:", Camera.getModelViewMatrix());*/

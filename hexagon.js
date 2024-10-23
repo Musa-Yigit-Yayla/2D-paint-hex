@@ -16,7 +16,7 @@ export class Hexagon{
             uniform float xFactor, yFactor; //factors for x y camera movement
             void main(){
                 color = fillColor;
-                vec3 pos = modelViewMatrix * vec3(vertPos.x - xFactor, vertPos.y - yFactor, 1.0);
+                vec3 pos = modelViewMatrix * vec3(vertPos.x + xFactor, vertPos.y + yFactor, 1.0);
                 gl_Position = vec4(pos.xy, 0.0, 1.0);
             }`,
         fs: 
@@ -37,8 +37,9 @@ export class Hexagon{
             in vec2 vertPos;
             
             uniform mat3 modelViewMatrix;
+            uniform float xFactor, yFactor; //factors for x y camera movement
             void main(){
-                vec3 pos = modelViewMatrix * vec3(vertPos, 1.0);
+                vec3 pos = modelViewMatrix * vec3(vertPos.x + xFactor, vertPos.y + yFactor, 1.0);
                 gl_Position = vec4(pos.xy, 0.0, 1.0);
                 //gl_PointSize = 5.0;
             }
@@ -227,6 +228,12 @@ export class Hexagon{
         //pass the mv matrix
         let mvMatrixLoc = gl.getUniformLocation(Hexagon.programStroke, "modelViewMatrix");
         gl.uniformMatrix3fv(mvMatrixLoc, false, mv);
+
+        //pass uniform x y factors of camera pos
+        xFactorLoc = gl.getUniformLocation(Hexagon.programStroke, "xFactor");
+        yFactorLoc = gl.getUniformLocation(Hexagon.programStroke, "yFactor");
+        gl.uniform1f(xFactorLoc, -Camera.position.x);
+        gl.uniform1f(yFactorLoc, -Camera.position.y);
 
         gl.drawArrays(gl.LINES, 0, strokePosArr.length / 2);
     }
