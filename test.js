@@ -24,14 +24,39 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 //hex.render(gl);
 
 function setEventHandlers(){
+    const boundingRect = canvas.getBoundingClientRect();
+    let startX, startY;
+
     if(zoomChecked){
-        
+        canvas.onmousedown = e => {
+            startX = e.x - boundingRect.left;
+            startY = e.y - boundingRect.top; //in canvas coordinates
+        }
+        canvas.onmousemove = e => {
+            let currX = e.x - boundingRect.left;
+            let currY = e.y - boundingRect.top;
+
+            //now update camera translation wrt to moved distance
+            let xFactor = (currX - startX) / canvas.width;
+            let yFactor = (currY - startY) / canvas.height;
+
+            console.log("Debug: zoomChecked mousemove yields x and y factors", xFactor, yFactor);
+
+            Camera.position.x = xFactor;
+            Camera.position.y = yFactor;
+
+            //force re-render
+            grid.renderGrid(gl);
+        }
+        canvas.onmouseup = e => {
+            //empty stub for resetting mouse up event
+        }
     }
     //proceed with else ifs for other functionalities
     else{
         canvas.onmousedown = e => {
             console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
-            const boundingRect = canvas.getBoundingClientRect();
+            
             const canvasX = e.x - boundingRect.left, canvasY = e.y - boundingRect.top;
             
             //reset the curr operation regardless of previously held data
