@@ -101,6 +101,25 @@ export class Grid{ //flat top even
         }
         return null;
     }
+    /**
+     * 
+     * @param {*} rowIndex of current hexagon
+     * @param {*} colIndex 
+     * @param {*} edge number 0, 1, 2, 3, 4, 5 which is shared with next hexagon
+     * @return relevant hexagon instance, DOES NOT PERFORM BOUNDARY CHECK
+     */
+    getNeighboringHex(rowIndex, colIndex, edge){
+        let hex = null;
+        switch(edge){
+            case 0: hex = this.grid[rowIndex - 1][colIndex]; break;
+            case 1: hex = this.grid[rowIndex - 1][colIndex -1]; break;
+            case 2: hex = this.grid[rowIndex][colIndex - 1]; break;
+            case 3: hex = this.grid[rowIndex + 1][colIndex]; break;
+            case 4: hex = this.grid[rowIndex][colIndex + 1]; break;
+            case 5: hex = this.grid[rowIndex - 1][colIndex + 1]; break;
+        }
+        return hex;
+    }
 
     /**
      * 
@@ -167,15 +186,62 @@ export class Grid{ //flat top even
             
             let firstIntersect = selectFirstIntersect();
             console.log("Debug: firstIntersect is ", firstIntersect);
+            //use the second intersect for finding the next hexagon to move
+            let secondIntersect = [];
+            if(startIntersections[0] === firstIntersect[0]){
+                secondIntersect = [startIntersections[2], startIntersections[3]];
+            }
+            else{
+                secondIntersect = [startIntersections[0], startIntersections[1]];
+            }
 
 
             //entry coords which pierced our hexagon first
             //let nextAdj = Grid.getNextAdjacent(currHex.topRightVert, currHex.topRightVert.x - Hexagon.WORLD_SIDE_LENGTH / 2.0, 
             //                                    currHex.topRightVert.y + Hexagon.WORLD_SIDE_LENGTH * Math.sqrt(3) / 2.0, slope);
-            let firstAdj = Grid.getNextAdjacent(currHex.topRightVert, firstIntersect[0], 
-                                                firstIntersect[1], slope);
-            console.log("Debug: firstAdj is", firstAdj);
+            /*let firstAdj = Grid.getNextAdjacent(currHex.topRightVert, secondIntersect[0], 
+                                                secondIntersect[1], slope);*/
+            let firstAdjEdge = Grid.getAdjacentEdge(currHex, secondIntersect[0], secondIntersect[1]);
+            let firstAdjHex = grid.getNeighboringHex(startRow, startCol, firstAdjEdge);
+            let secondAdj = Grid.getNextAdjacent(firstAdjHex.topRightVert, secondIntersect[0], secondIntersect[1], slope);
+            console.log("Debug: firstAdjEdge is", firstAdjEdge);
+            console.log("Debug: secondAdj is ", secondAdj);
         }
+    }
+    /**
+     * 
+     * @param {*} hex hexagon
+     * @param {*} x coordinate of intersection with one of the edges (already known)
+     * @param {*} y
+     * @return 0,1,2,3,4,5 (edge number)
+     */
+    static getAdjacentEdge(hex, x, y){
+        let result = -1;
+
+        const sideLength = Hexagon.WORLD_SIDE_LENGTH;
+        const { x: topRightX, y: topRightY } = hex.topRightVert;
+    
+        // Vertices of the hexagon
+        const vertices = [
+            { x: topRightX, y: topRightY },                               // Top-right
+            { x: topRightX - sideLength, y: topRightY },                  // Top-left
+            { x: topRightX - sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) }, // Bottom-left
+            { x: topRightX + sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) }, // Bottom-right
+            { x: topRightX + sideLength, y: topRightY },                  // Right-bottom
+            { x: topRightX, y: topRightY + (sideLength * Math.sqrt(3)) }, // Bottom-center
+        ];
+
+        for(let i = 0; i < vertices.length; i++){
+            let v0 = vertices[i];
+            let v1 = vertices[(i + 1) % 6]; //for last vertex connection
+
+            if(Grid.pointLiesOnLineSegment(v0.x, v0.y, v1.x, v1.y, x, y)){
+                result = i;
+                break;
+            }
+        }
+        console.log("Debug: GAE returning", result);
+        return result;
     }
     /**
      * 
@@ -186,22 +252,34 @@ export class Grid{ //flat top even
      * @return 0, 1, 2, 3, 4, 5 which denotes intersected line (return -1 on unexpected result)
      */
     static getNextAdjacent(topRight, entryX, entryY, slope){
+        console.log("Debug: GNA invoked with entryX, entryY", entryX, entryY);
         let result = -1;
 
         //start from top right and move counter clockwise
         let currLine = 0; //starting vertex number
 
-        let vertPositions = Hexagon.VERTICES;
-        for(let i = 0; i < vertPositions.length; i += 2){
-            vertPositions[i] += topRight.x;
-            vertPositions[i + 1] += topRight.y;
-        }
+        const sideLength = Hexagon.WORLD_SIDE_LENGTH;
+        let topRightX = topRight.x, topRightY = topRight.y;
+    
+        // Vertices of the hexagon
+        const vertices = [
+            { x: topRightX, y: topRightY },                               // Top-right
+            { x: topRightX - sideLength, y: topRightY },                  // Top-left
+            { x: topRightX - sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) }, // Bottom-left
+            { x: topRightX + sideLength / 2, y: topRightY + (sideLength * Math.sqrt(3) / 2) }, // Bottom-right
+            { x: topRightX + sideLength, y: topRightY },                  // Right-bottom
+            { x: topRightX, y: topRightY + (sideLength * Math.sqrt(3)) }, // Bottom-center
+        ];
+
         while(currLine < 6){ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!! HERE WE NEED 6 AS WE DO NOT CONSIDER THE P6-P0 LINE WITH 5 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            let lx0 = vertPositions[currLine], ly0 = vertPositions[currLine + 1];
-            let lx1 = vertPositions[(currLine + 2) % 12], ly1 = vertPositions[(currLine + 3) % 12]; //for connecting last vertex to first
+            let lx0 = vertices[currLine].x, ly0 = vertices[currLine].y;
+            let lx1 = vertices[(currLine + 1) % 6].x, ly1 = vertices[(currLine + 1) % 6].y; //for connecting last vertex to first
 
             let currSlope = (ly1 - ly0) * 1.0 / (lx1 - lx0); //we haven o case where slope is infinite due to our hexagon type choice
             let intersection = Grid.findLineIntersection(entryX, entryY, slope, lx0, ly0, currSlope);
+
+            console.log("Debug GNA: lx0, ly0, lx1, ly1", lx0, ly0, lx1, ly1);
+            console.log("Debug GNA: intersection", intersection);
 
             if(intersection.x === entryX && intersection.y === entryY){
                 console.log("HEEEEEEEEEEEEEEEEEEEEEEEEEEEY");
@@ -216,6 +294,7 @@ export class Grid{ //flat top even
 
             currLine++;
         }
+        console.log("Debug: GNA returning", result);
         return result;
     }
     /**
