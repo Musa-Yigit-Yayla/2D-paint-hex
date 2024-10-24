@@ -162,31 +162,74 @@ export class Grid{ //flat top even
      * @param {*} overrideMap1 second override to be applied after first
      * @param {*} indexTranslateMap1 is translation factor for map1 where we add these to each index key in map1 when we are about to write map1
      * Overrides the current grid with given color override maps in order
+     * Also modifies index data of Hexagon class, keep an initial copy somewhere for restoration
      */
     writeMoveChanges(overrideMap0, overrideMap1, indexTranslateMap1){
         //console.log("Debug WRITEMOVECHANGES: this is", this);
+        console.log("Debug: WMC invoked with maps", overrideMap0, overrideMap1);
         if(overrideMap0 !== null && overrideMap1 !== null){
             overrideMap0.forEach((value, key) => {
                 //console.log("Debug Map0: key value is", key, value);
                 let row = Math.floor(key / this.gridLength), col = key % this.gridLength;
+                let currIndex = row * this.gridLength + col;
 
                 if(value === -1){
                     //console.log("DEBUG WMC row and col are", row, col);
                     let currHex = this.grid[row][col];
                     currHex.color = value;
+
+                    if(!currHex.strokeEnabled){
+                        console.log("Debug: AAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                        removeByValue(Hexagon.filledIndexData, currIndex);
+                        Hexagon.strokeIndexData.push(currIndex);
+                        currHex.strokeEnabled = true;
+                    }
                 }
                 else{
                     console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", key);
                 }
             });
+            //now also apply the same logic we have applied to map0 to map1 without changing indexes
+            //for leaving empty cells
+
             overrideMap1.forEach((value, key) => {
-                let currKey = key - indexTranslateMap1;
+                //console.log("Debug Map0: key value is", key, value);
+                let row = Math.floor(key / this.gridLength), col = key % this.gridLength;
+                let currIndex = row * this.gridLength + col;
+
+                //if(value === -1){
+                    //console.log("DEBUG WMC row and col are", row, col);
+                    let currHex = this.grid[row][col];
+                    currHex.color = value;
+
+                    //if(!currHex.strokeEnabled){
+                        console.log("Debug: AAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                        removeByValue(Hexagon.filledIndexData, currIndex);
+                        Hexagon.strokeIndexData.push(currIndex);
+                        currHex.strokeEnabled = true;
+                    //}
+                /*}
+                else{
+                    console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", key);
+                }*/
+            });
+
+            overrideMap1.forEach((value, key) => {
+                let currKey = key + indexTranslateMap1;
                 let row = Math.floor(currKey / this.gridLength), col = currKey % this.gridLength;
+                let currIndex = row * this.gridLength + col;
 
                 if(value !== -1){
                     console.log("Debug WMC map1 row col indexTranslateMap1", row, col, indexTranslateMap1);
                     let currHex = this.grid[row][col];
                     currHex.color = value;
+
+                    if(currHex.strokeEnabled){
+                        console.log("Debug: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
+                        currHex.strokeEnabled = false;
+                        removeByValue(Hexagon.strokeIndexData, currIndex);
+                        Hexagon.filledIndexData.push(currIndex);
+                    }
                 }
                 else{
                     console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
@@ -528,5 +571,12 @@ static findFarthestPoints(points) {
             outColor = vec4(0.0, 0.0, 0.0, 1.0);
         }
         `
+    }
+}
+//removes a given element by value from the given array
+function removeByValue(array, item){
+    var index = array.indexOf(item);
+    if (index !== -1) {
+      array.splice(index, 1);
     }
 }
