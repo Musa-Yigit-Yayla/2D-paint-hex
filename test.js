@@ -101,6 +101,10 @@ function setEventHandlers(){
             
         }
         canvas.onmouseup = e =>{
+            let originalStrokeIndexes = JSON.parse(JSON.stringify(Hexagon.strokeIndexData));
+            let originalFilledIndexes = JSON.parse(JSON.stringify(Hexagon.filledIndexData)); //RESTORE THESE ONES BACK AGAIN LATER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+
+
             //now as we have our start and end hexagons, we can work on moving the selection and finally dropping it in its new place
 
             //now imagine we override our grid temporarily where we have empty cells for our whole initial selection
