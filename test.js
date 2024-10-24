@@ -107,21 +107,38 @@ function setEventHandlers(){
             //for this purpose we can have a overriding hexagon map where we have hex indices mapped to a color or -1
 
             let overrideMap0 = new Map(); //holds the initially selected area
+            let overrideMap1 = new Map(); //override which happens after movement (based onoriginal grid)
+
             //insert into the map the current selected rectangular area with color all -1
             for(let row = startGridIndexes[0]; row < endGridIndexes[0]; row++){
                 for(let col = startGridIndexes[1]; col < endGridIndexes[1]; col++){
-                    let index = row * grid.grid.length;
+                    let index = row * grid.grid.length + col;
                     overrideMap0.set(index, -1);
+
+                    //also insert the original color of the current indexed hexagon into map1 if it is colored
+                    let currHex = grid.grid[row][col];
+                    if(!currHex.strokeEnabled){
+                        overrideMap1.set(index, currHex.color);
+                    }
                 }
             }
 
-            let overrideMap1 = new Map(); //override which happens after movement (based onoriginal grid)
+            console.log("Debug MOVE RECT: overrideMap0 and overrideMap1 are respectively", overrideMap0, overrideMap1);
+
+            let dropX = 0, dropY = 0;
 
             canvas.onmousemove = e => {
                 //move the current selection
+                let canvasX = e.x - boundingRect.left;
+                let canvasY = e.y - boundingRect.top; //in canvas coordinates
+                dropX = canvasX, dropY = canvasY;
             }
             canvas.onmousedown = e => {
                 //drop and finalize
+                let gridIndexes = [];
+    
+                let dropHex = grid.getGridEntry(dropX, dropY, gridIndexes); //this is the drop starting hexagon
+                console.log("Debug MOVE RECT: dropHex gridIndexes is", gridIndexes);
             }
             canvas.onmouseup = e => {
                 //reset to empty stub
