@@ -180,10 +180,11 @@ export class Grid{ //flat top even
                 }
             });
             overrideMap1.forEach((value, key) => {
-                let currKey = key + indexTranslateMap1;
+                let currKey = key - indexTranslateMap1;
                 let row = Math.floor(currKey / this.gridLength), col = currKey % this.gridLength;
 
                 if(value !== -1){
+                    console.log("Debug WMC map1 row col indexTranslateMap1", row, col, indexTranslateMap1);
                     let currHex = this.grid[row][col];
                     currHex.color = value;
                 }

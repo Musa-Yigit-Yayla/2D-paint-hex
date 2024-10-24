@@ -15,6 +15,8 @@ let zoomChecked = false; //will be used to enable zoom and its event handling et
 let moveEnabled = false; //rect move enabled
 const ZOOM_STEP = 0.2;
 
+let currMode = 0; // 0 for brush
+
 //WE NEED 1X1 ratio in canvas!
 console.log("Debug: canvas width and height are", canvas.width, canvas.height);
 
@@ -27,7 +29,7 @@ console.log("Debug: Hexagon regular vertPos is ", Hexagon.VERT_POS);
 function setEventHandlers(){
     const boundingRect = canvas.getBoundingClientRect();
 
-    if(zoomChecked){
+    if(currMode === 1){
         let startX, startY;
         let mouseMoveEnabled = false;
 
@@ -58,7 +60,7 @@ function setEventHandlers(){
             mouseMoveEnabled = false;
         }
     }
-    else if(moveEnabled){
+    else if(currMode === 2){
         let startHex = null;
         let endHex = null;
         let startGridIndexes = null;
@@ -80,8 +82,8 @@ function setEventHandlers(){
         }
         canvas.onmousemove = e => {
             if(startHex !== null){
-                let canvasX = e.x - boundingRect.left;
-                let canvasY = e.y - boundingRect.top; //in canvas coordinates
+                let canvasX = e.x //- boundingRect.left;
+                let canvasY = e.y //- boundingRect.top; //in canvas coordinates
                 let gridIndexes = [];
     
                 endHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
@@ -140,8 +142,9 @@ function setEventHandlers(){
                 let currDropHex = grid.getGridEntry(dropX, dropY, gridIndexes);
                 let currDropIndex = gridIndexes[0] * gridCopy.gridLength + gridIndexes[1];
 
+                let startGridIndex = startGridIndexes[0] * gridCopy.gridLength + startGridIndexes[1];
                 //now deep copy grid and override that grid and temporarily render that grid
-                gridCopy.writeMoveChanges(overrideMap0, overrideMap1, currDropIndex);
+                gridCopy.writeMoveChanges(overrideMap0, overrideMap1, currDropIndex - startGridIndex);
                 gridCopy.renderGrid(gl); //render the grid copy
             }
             canvas.onmousedown = e => {
@@ -157,7 +160,7 @@ function setEventHandlers(){
         }
     }
     //proceed with else ifs for other functionalities
-    else{
+    else if(currMode === 0){ //brush
         canvas.onmousedown = e => {
             console.log("Debug: canvas mouse down has positions as " + e.x + ", " + e.y);
             
@@ -398,14 +401,14 @@ function cbZoomHandler(e){
     grid.renderGrid(gl);//force re-render
 }
 function btZoomInHandler(e){
-    if(zoomChecked){
+    if(zoomChecked || currMode === 1){
         Camera.zoomFactor += ZOOM_STEP;
         document.getElementById("zoomLabel").textContent = Camera.zoomFactor;
         grid.renderGrid(gl);//force re-render
     }
 }
 function btZoomOutHandler(e){
-    if(zoomChecked){
+    if(zoomChecked || currMode === 1){
         Camera.zoomFactor -= ZOOM_STEP;
         if(Camera.zoomFactor < 0.2){
             Camera.zoomFactor = 0.2; //hardcode
@@ -426,6 +429,20 @@ document.getElementById("btUndo").addEventListener("click", undoHandler);
 document.getElementById("btRedo").addEventListener("click", redoHandler);
 document.getElementById("btZoomIn").addEventListener("click", btZoomInHandler);
 document.getElementById("btZoomOut").addEventListener("click", btZoomOutHandler);
+const radios = document.getElementsByName('mode');
+
+radios.forEach(radio => {
+    radio.addEventListener('change', e => {
+        switch(e.target.value){
+            case "brush": currMode = 0; break;
+            case "zoom": currMode = 1; break;
+            case "move": currMode = 2; break;
+            case "line": currMode = 3; break;
+        }
+        console.log("Debug: currMode rb is", currMode);
+        setEventHandlers(); //reset event handling
+    })
+})
 
 //removes a given element by value from the given array
 function removeByValue(array, item){
