@@ -132,14 +132,16 @@ function setEventHandlers(){
             console.log("Debug MOVE RECT: overrideMap0 and overrideMap1 are respectively", overrideMap0, overrideMap1);
 
             let dropX = 0, dropY = 0;
-
+            let gridCopy = null;
             canvas.onmousemove = e => {
+                //Hexagon.filledIndexData = originalFilledIndexes; CONSIDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRRR
+                //Hexagon.strokeIndexData = originalStrokeIndexes;
                 //move the current selection
                 let canvasX = e.x; //- boundingRect.left;
                 let canvasY = e.y; //- boundingRect.top; //in canvas coordinates
                 dropX = canvasX, dropY = canvasY;
 
-                let gridCopy = grid.deepCopy();
+                gridCopy = grid.deepCopy();
 
                 let gridIndexes = [];
     
@@ -156,7 +158,13 @@ function setEventHandlers(){
                 let gridIndexes = [];
     
                 let dropHex = grid.getGridEntry(dropX, dropY, gridIndexes); //this is the drop starting hexagon
-                console.log("Debug MOVE RECT: dropHex gridIndexes is", gridIndexes);
+                console.log("Debug JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJ MOVE RECT: dropHex gridIndexes is", gridIndexes);
+
+                if(gridCopy !== null){
+                    grid = gridCopy;                 //set the current grid to grid copy
+                }
+                currMode = 0; //TEEEEEEEEEEST FIXXXX
+                setEventHandlers(); //reset the event handlers to initial state
             }
             canvas.onmouseup = e => {
                 //reset to empty stub
