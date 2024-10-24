@@ -59,6 +59,20 @@ export class Grid{ //flat top even
     }
     /**
      * 
+     * @param {*} grid0 the grid on top
+     * @param {*} grid1 the grid on mid
+     * @param {*} grid2 the grid onbottom
+     * 
+     * renders a combined grid (use when DISABLEd edit mode)
+     */
+    static renderCombinedGrid(grid0, grid1, grid2){
+        //iterate for each entry and finally construct a temp grid and render that
+        let tempGrid = null;
+
+        
+    }
+    /**
+     * 
      * @param {*} gl 
      * invoke after rendering grid to render a rectengular selection we currently have
      * x0, y0 to x1, y1 comprises a diagonal of our rectangle

@@ -345,9 +345,18 @@ let n = 10;
 //Camera.setProjectionMatrix(canvas); //set the projection matrix at the beginning
 
 let firstTopRight = {x: 30, y: 30};
-let grid = new Grid(n);
+let grid = new Grid(n); //grid 0
 grid.initGrid(firstTopRight);
-Hexagon.setIndexData(gl, grid.grid);
+let grid0 = grid; //copy by reference
+let grid1 = grid.deepCopy(); //grid 1
+let grid2 = grid.deepCopy(); //grid 2
+
+let indexesGrid2 = Hexagon.setIndexData(gl, grid2.grid); //NOW ALSO static Hexagon indexes are set for grid 2
+let indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
+let indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
+
+let gridOrder = [0, 1, 2]; //here grid 0 comes first (on top) grid 2 comes last
+
 grid.renderGrid(gl);
 
 
