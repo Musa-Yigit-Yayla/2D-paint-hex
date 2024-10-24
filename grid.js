@@ -6,6 +6,10 @@ export class Grid{ //flat top even
     brush = {r: 0.0, g: 0.0, b: 0.0};
     firstTopRight;
 
+    static programRect;
+    static bufferRect;
+    static programRectSet = false;
+
     constructor(gridLength){
         this.gridLength = gridLength;
     }
@@ -45,6 +49,30 @@ export class Grid{ //flat top even
         }*/
        //prior to rendering this ensure that you invoke your Hexagon.setBufferData for once (for the first render)
        Hexagon.renderGrid(gl, this.grid, this.brush);
+    }
+    /**
+     * 
+     * @param {*} gl 
+     * invoke after rendering grid to render a rectengular selection we currently have
+     * x0, y0 to x1, y1 comprises a diagonal of our rectangle
+     */
+    renderRectSelection(gl, x0, y0, x1, y1){
+        if(!Grid.programRectSet){
+            Grid.initRectSelection(gl);
+            Grid.programRectSet = true;
+        }
+        //DO NOT CLEAR BUFFER BIT HERE
+        
+        let vertices = new Float32Array([x0, y0, x1, y0, x1, y1, x0, y1]);
+        gl.useProgram(Grid.programRect);
+        gl.bindBuffer(gl.ARRAY_BUFFER, Grid.bufferRect);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        let vertPosLoc = gl.getAttribLocation(Grid.programRect, "vertPos");
+        gl.enableVertexAttribArray(vertPosLoc);
+        gl.vertexAttribPointer(vertPosLoc, 2, gl.FLOAT, false, 0, 0);
+
+        gl.drawArrays(gl.LINE_LOOP, 0, 4);
     }
 
     /**
@@ -412,5 +440,47 @@ static findFarthestPoints(points) {
         let withinSegment = (lengthX1 <= lengthX0 && lengthX2 <= lengthX0) && (lengthY1 <= lengthY0 && lengthY2 <= lengthY0);
 
         return (Math.abs(s1 - s0) < epsilon && withinSegment);
+    }
+
+
+    //method for initializing rect selection program
+    static initRectSelection(gl){
+        Grid.programRect = gl.createProgram();
+        let vsShader = gl.createShader(gl.VERTEX_SHADER);
+        let fsShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+        gl.shaderSource(vsShader, Grid.shaders.vs);
+        gl.shaderSource(fsShader, Grid.shaders.fs);
+
+        gl.compileShader(vsShader);
+        gl.compileShader(fsShader);
+
+        gl.attachShader(Grid.programRect, vsShader);
+        gl.attachShader(Grid.programRect, fsShader);
+
+        gl.linkProgram(Grid.programRect);
+
+        Grid.bufferRect = gl.createBuffer();
+    }
+
+    static shaders = { //shaders for drawing rectangular selection lines during selection
+        vs: 
+        `#version 300 es
+
+        in vec2 vertPos;
+
+        void main(){
+            gl_Position = vec4(vertPos, 0.0, 1.0);
+        }
+        `,
+        fs: 
+        `#version 300 es
+        precision mediump float;
+
+        out vec4 outColor;
+        void main(){
+            outColor = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+        `
     }
 }

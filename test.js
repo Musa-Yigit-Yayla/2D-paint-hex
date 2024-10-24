@@ -12,6 +12,7 @@ canvas.addEventListener('contextmenu', function(event) {
 });
 let leftMouseDown = false, rightMouseDown = false;
 let zoomChecked = false; //will be used to enable zoom and its event handling etc.
+let moveEnabled = false; //rect move enabled
 const ZOOM_STEP = 0.2;
 
 //WE NEED 1X1 ratio in canvas!
@@ -55,6 +56,46 @@ function setEventHandlers(){
         }
         canvas.onmouseup = e => {
             mouseMoveEnabled = false;
+        }
+    }
+    else if(moveEnabled){
+        let startHex = null;
+        let endHex = null;
+        let rectStart = null, rectEnd = null; //coordinate objects in clipspace
+
+        //rectengular selection and movement
+        canvas.onmousedown = e => {
+            let canvasX = e.x - boundingRect.left;
+            let canvasY = e.y - boundingRect.top; //in canvas coordinates
+            let gridIndexes = [];
+
+            startHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+
+            if(startHex !== null){
+                let rectStart = startHex.translateCoords(canvasX, canvasY);
+            }
+        }
+        canvas.onmousemove = e => {
+            if(startHex !== null){
+                let canvasX = e.x - boundingRect.left;
+                let canvasY = e.y - boundingRect.top; //in canvas coordinates
+                let gridIndexes = [];
+    
+                endHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+    
+                if(endHex !== null){
+                    let rectEnd = endHex.translateCoords(canvasX, canvasY);
+                    //force rerender of grid then render rectangle
+                    grid.renderGrid(gl);
+                    grid.renderRectSelection(gl, startHex.x, startHex.y, endHex.x, endHex.y);
+                    
+                }
+            }
+           
+            
+        }
+        canvas.onmouseup = e =>{
+
         }
     }
     //proceed with else ifs for other functionalities
@@ -336,8 +377,12 @@ function removeByValue(array, item){
     }
 }
 
-Grid.locateLineIndexes(0, 0, 2, 2, grid);
+//Grid.locateLineIndexes(0, 8, 6, 1, grid);
 //console.log("Debug: Hexagon.VERT_POS & Hexagon.VERTICES are", Hexagon.VERT_POS, Hexagon.VERTICES);
+
+//grid.renderRectSelection(gl, 0.2, 0.2, 0.8, 0.8);
+moveEnabled = true; //for testing
+setEventHandlers(); //for testing
 
 /*Camera.position.x += 0.4;
 Camera.position.y += 0.8;
