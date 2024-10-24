@@ -180,7 +180,7 @@ export class Grid{ //flat top even
                 }
             });
             overrideMap1.forEach((value, key) => {
-                let currKey = key - indexTranslateMap1;
+                let currKey = key + indexTranslateMap1;
                 let row = Math.floor(currKey / this.gridLength), col = currKey % this.gridLength;
 
                 if(value !== -1){

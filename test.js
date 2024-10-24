@@ -69,8 +69,8 @@ function setEventHandlers(){
 
         //rectengular selection and movement
         canvas.onmousedown = e => {
-            let canvasX = e.x - boundingRect.left;
-            let canvasY = e.y - boundingRect.top; //in canvas coordinates
+            let canvasX = e.x; //- boundingRect.left;
+            let canvasY = e.y; //- boundingRect.top; //in canvas coordinates
             let gridIndexes = [];
 
             startHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
@@ -131,8 +131,8 @@ function setEventHandlers(){
 
             canvas.onmousemove = e => {
                 //move the current selection
-                let canvasX = e.x - boundingRect.left;
-                let canvasY = e.y - boundingRect.top; //in canvas coordinates
+                let canvasX = e.x; //- boundingRect.left;
+                let canvasY = e.y; //- boundingRect.top; //in canvas coordinates
                 dropX = canvasX, dropY = canvasY;
 
                 let gridCopy = grid.deepCopy();
