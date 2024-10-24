@@ -132,6 +132,17 @@ function setEventHandlers(){
                 let canvasX = e.x - boundingRect.left;
                 let canvasY = e.y - boundingRect.top; //in canvas coordinates
                 dropX = canvasX, dropY = canvasY;
+
+                let gridCopy = grid.deepCopy();
+
+                let gridIndexes = [];
+    
+                let currDropHex = grid.getGridEntry(dropX, dropY, gridIndexes);
+                let currDropIndex = gridIndexes[0] * gridCopy.gridLength + gridIndexes[1];
+
+                //now deep copy grid and override that grid and temporarily render that grid
+                gridCopy.writeMoveChanges(overrideMap0, overrideMap1, currDropIndex);
+                gridCopy.renderGrid(gl); //render the grid copy
             }
             canvas.onmousedown = e => {
                 //drop and finalize

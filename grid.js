@@ -13,6 +13,13 @@ export class Grid{ //flat top even
     constructor(gridLength){
         this.gridLength = gridLength;
     }
+    deepCopy(){
+        let copy = new Grid(this.gridLength);
+        copy.initGrid(this.firstTopRight);
+        copy.brush = {r: this.brush.r, g: this.brush.g, b: this.brush.b};
+
+        return copy;
+    }
     /**
      * 
      * @param {*} firstTopRight top right vert pos of the first hexagon (0, 0), in world space coordinates
@@ -149,6 +156,44 @@ export class Grid{ //flat top even
         return hex;
     }
 
+    /**
+     * 
+     * @param {*} overrideMap0 first override to be applied
+     * @param {*} overrideMap1 second override to be applied after first
+     * @param {*} indexTranslateMap1 is translation factor for map1 where we add these to each index key in map1 when we are about to write map1
+     * Overrides the current grid with given color override maps in order
+     */
+    writeMoveChanges(overrideMap0, overrideMap1, indexTranslateMap1){
+        //console.log("Debug WRITEMOVECHANGES: this is", this);
+        if(overrideMap0 !== null && overrideMap1 !== null){
+            overrideMap0.forEach((value, key) => {
+                //console.log("Debug Map0: key value is", key, value);
+                let row = Math.floor(key / this.gridLength), col = key % this.gridLength;
+
+                if(value === -1){
+                    //console.log("DEBUG WMC row and col are", row, col);
+                    let currHex = this.grid[row][col];
+                    currHex.color = value;
+                }
+                else{
+                    console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", key);
+                }
+            });
+            overrideMap1.forEach((value, key) => {
+                let currKey = key + indexTranslateMap1;
+                let row = Math.floor(currKey / this.gridLength), col = currKey % this.gridLength;
+
+                if(value !== -1){
+                    let currHex = this.grid[row][col];
+                    currHex.color = value;
+                }
+                else{
+                    console.log("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+                }
+            });
+        }
+
+    }
     /**
      * 
      * @param {*} startRow 
