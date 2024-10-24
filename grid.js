@@ -63,13 +63,66 @@ export class Grid{ //flat top even
      * @param {*} grid1 the grid on mid
      * @param {*} grid2 the grid onbottom
      * 
+     * indexesi parameter contains [strokeIndexes, filledIndexes] for grid i
+     * 
      * renders a combined grid (use when DISABLEd edit mode)
      */
-    static renderCombinedGrid(grid0, grid1, grid2){
+    static renderCombinedGrid(gl, grid0, grid1, grid2, indexes0, indexes1){
+        console.log("Debug RCGGGGGGGGGGGGGGGGGGGGGGGGGGG: invoked with parameters (without grid) respectively", grid0, grid1, grid2, indexes0, indexes1);
         //iterate for each entry and finally construct a temp grid and render that
-        let tempGrid = null;
+        let tempGrid = grid2.deepCopy(); //it has bottom grid content now
+        //let tempGridIndexes = Hexagon.setIndexData(gl, tempGrid.grid);
+        let tempStrokes = [], tempFilleds = []; //index arrays for temp grid
 
-        
+        let sIndexes0 = indexes0[0], fIndexes0 = indexes0[1];
+        let sIndexes1 = indexes1[0], fIndexes1 = indexes1[1];
+
+        let arrayContains = function(arr, e){
+            for(let i = 0; i < arr.length; i++){
+                if(arr[i] === e){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        let length = grid0.gridLength;
+        for(let i = 0; i < length; i++){ //row
+            for(let j = 0; j < length; j++){ //col
+                let currIndex = i * length + j;
+                let paintColor = null;
+
+                console.log("Debug RCG: currIndex and branch conditions are respectively", currIndex, arrayContains(fIndexes0,currIndex), arrayContains(fIndexes1,currIndex));
+
+
+                if(arrayContains(fIndexes0,currIndex)){
+                    //paint grid0 entry color
+                    paintColor = grid0.grid[i][j].color;
+                }
+                else if(arrayContains(fIndexes1,currIndex)){
+                    paintColor = grid1.grid[i][j].color;
+                }
+                if(paintColor !== null){
+                    let tempHex = tempGrid.grid[i][j];
+                    tempHex.color = paintColor;
+                    tempHex.strokeEnabled = false;
+                    tempFilleds.push(currIndex);
+                }
+                else{
+                    //empty cell
+                    let tempHex = tempGrid.grid[i][j];
+                    tempHex.strokeEnabled = true;
+                    tempStrokes.push(currIndex);
+                }
+                //look from top to bottom to see if any current index is painted and if so set the value to it to tempGrid
+                
+            }
+        }
+        console.log("Debug RCGGGGGGGGGGGGGGG temp stroke and filleds indexes", tempStrokes, tempFilleds);
+        //now set the static hexagon index datas and render the temp grid
+        Hexagon.strokeIndexData = tempStrokes;
+        Hexagon.filledIndexData = tempFilleds;
+        tempGrid.renderGrid(gl);
     }
     /**
      * 
