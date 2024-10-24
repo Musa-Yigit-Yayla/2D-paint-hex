@@ -166,6 +166,7 @@ export class Grid{ //flat top even
      */
     writeMoveChanges(overrideMap0, overrideMap1, indexTranslateMap1){
         //console.log("Debug WRITEMOVECHANGES: this is", this);
+        console.log("Debug: WMC invoked with maps", overrideMap0, overrideMap1);
         if(overrideMap0 !== null && overrideMap1 !== null){
             overrideMap0.forEach((value, key) => {
                 //console.log("Debug Map0: key value is", key, value);
@@ -178,6 +179,7 @@ export class Grid{ //flat top even
                     currHex.color = value;
 
                     if(!currHex.strokeEnabled){
+                        console.log("Debug: AAAAAAAAAAAAAAAAAAAAAAAAAAA");
                         removeByValue(Hexagon.filledIndexData, currIndex);
                         Hexagon.strokeIndexData.push(currIndex);
                         currHex.strokeEnabled = true;
@@ -187,6 +189,31 @@ export class Grid{ //flat top even
                     console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", key);
                 }
             });
+            //now also apply the same logic we have applied to map0 to map1 without changing indexes
+            //for leaving empty cells
+
+            overrideMap1.forEach((value, key) => {
+                //console.log("Debug Map0: key value is", key, value);
+                let row = Math.floor(key / this.gridLength), col = key % this.gridLength;
+                let currIndex = row * this.gridLength + col;
+
+                //if(value === -1){
+                    //console.log("DEBUG WMC row and col are", row, col);
+                    let currHex = this.grid[row][col];
+                    currHex.color = value;
+
+                    //if(!currHex.strokeEnabled){
+                        console.log("Debug: AAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                        removeByValue(Hexagon.filledIndexData, currIndex);
+                        Hexagon.strokeIndexData.push(currIndex);
+                        currHex.strokeEnabled = true;
+                    //}
+                /*}
+                else{
+                    console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", key);
+                }*/
+            });
+
             overrideMap1.forEach((value, key) => {
                 let currKey = key + indexTranslateMap1;
                 let row = Math.floor(currKey / this.gridLength), col = currKey % this.gridLength;
@@ -198,6 +225,7 @@ export class Grid{ //flat top even
                     currHex.color = value;
 
                     if(currHex.strokeEnabled){
+                        console.log("Debug: CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
                         currHex.strokeEnabled = false;
                         removeByValue(Hexagon.strokeIndexData, currIndex);
                         Hexagon.filledIndexData.push(currIndex);
