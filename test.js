@@ -61,6 +61,8 @@ function setEventHandlers(){
     else if(moveEnabled){
         let startHex = null;
         let endHex = null;
+        let startGridIndexes = null;
+        let endGridIndexes = null;
         let rectStart = null, rectEnd = null; //coordinate objects in clipspace
 
         //rectengular selection and movement
@@ -70,9 +72,10 @@ function setEventHandlers(){
             let gridIndexes = [];
 
             startHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+            startGridIndexes = gridIndexes;
 
             if(startHex !== null){
-                let rectStart = startHex.translateCoords(canvasX, canvasY);
+                rectStart = startHex.translateCoords(canvasX, canvasY);
             }
         }
         canvas.onmousemove = e => {
@@ -82,12 +85,13 @@ function setEventHandlers(){
                 let gridIndexes = [];
     
                 endHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+                endGridIndexes = gridIndexes;
     
                 if(endHex !== null){
-                    let rectEnd = endHex.translateCoords(canvasX, canvasY);
+                    rectEnd = endHex.translateCoords(canvasX, canvasY);
                     //force rerender of grid then render rectangle
                     grid.renderGrid(gl);
-                    grid.renderRectSelection(gl, startHex.x, startHex.y, endHex.x, endHex.y);
+                    grid.renderRectSelection(gl, rectStart.x, rectStart.y, rectEnd.x, rectEnd.y);
                     
                 }
             }
@@ -95,7 +99,33 @@ function setEventHandlers(){
             
         }
         canvas.onmouseup = e =>{
+            //now as we have our start and end hexagons, we can work on moving the selection and finally dropping it in its new place
 
+            //now imagine we override our grid temporarily where we have empty cells for our whole initial selection
+            //and we override the first overriden grid to include non empty selected hexagons on the current hexagon as if it was the starting pos
+
+            //for this purpose we can have a overriding hexagon map where we have hex indices mapped to a color or -1
+
+            let overrideMap0 = new Map(); //holds the initially selected area
+            //insert into the map the current selected rectangular area with color all -1
+            for(let row = startGridIndexes[0]; row < endGridIndexes[0]; row++){
+                for(let col = startGridIndexes[1]; col < endGridIndexes[1]; col++){
+                    let index = row * grid.grid.length;
+                    overrideMap0.set(index, -1);
+                }
+            }
+
+            let overrideMap1 = new Map(); //override which happens after movement (based onoriginal grid)
+
+            canvas.onmousemove = e => {
+                //move the current selection
+            }
+            canvas.onmousedown = e => {
+                //drop and finalize
+            }
+            canvas.onmouseup = e => {
+                //reset to empty stub
+            }
         }
     }
     //proceed with else ifs for other functionalities

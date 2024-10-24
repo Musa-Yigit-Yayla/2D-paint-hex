@@ -185,7 +185,7 @@ export class Hexagon{
         //pass the uniform mv matrix to filled program
         let mvLoc = gl.getUniformLocation(Hexagon.program, "modelViewMatrix");
         let mv = Camera.flattenMat(Camera.getModelViewMatrix());
-        console.log("Debug: hexagon flattened mv is", mv);
+        //console.log("Debug: hexagon flattened mv is", mv);
         gl.uniformMatrix3fv(mvLoc, false, mv);
 
         //pass uniform x y factors of camera pos
