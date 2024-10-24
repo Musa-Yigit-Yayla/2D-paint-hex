@@ -173,17 +173,20 @@ export class Grid{ //flat top even
                 let row = Math.floor(key / this.gridLength), col = key % this.gridLength;
                 let currIndex = row * this.gridLength + col;
 
+                console.log("Debug AAAAAAAAAAAAAAAA: value", value);
                 if(value === -1){
                     //console.log("DEBUG WMC row and col are", row, col);
                     let currHex = this.grid[row][col];
                     currHex.color = value;
 
-                    if(!currHex.strokeEnabled){
+                    console.log("Debug AAAAAAAAAAAAAAAA: currHex", currHex);
+                    //if(!currHex.strokeEnabled){
                         console.log("Debug: AAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                        currHex.strokeEnabled = true;
                         removeByValue(Hexagon.filledIndexData, currIndex);
                         Hexagon.strokeIndexData.push(currIndex);
-                        currHex.strokeEnabled = true;
-                    }
+                        
+                    //}
                 }
                 else{
                     console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", key);
@@ -192,7 +195,7 @@ export class Grid{ //flat top even
             //now also apply the same logic we have applied to map0 to map1 without changing indexes
             //for leaving empty cells
 
-            overrideMap1.forEach((value, key) => {
+            /*overrideMap1.forEach((value, key) => {
                 //console.log("Debug Map0: key value is", key, value);
                 let row = Math.floor(key / this.gridLength), col = key % this.gridLength;
                 let currIndex = row * this.gridLength + col;
@@ -208,11 +211,12 @@ export class Grid{ //flat top even
                         Hexagon.strokeIndexData.push(currIndex);
                         currHex.strokeEnabled = true;
                     //}
-                /*}
+                
+                }
                 else{
                     console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", key);
-                }*/
-            });
+                }
+            });*/
 
             overrideMap1.forEach((value, key) => {
                 let currKey = key + indexTranslateMap1;
