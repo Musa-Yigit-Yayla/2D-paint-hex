@@ -74,6 +74,8 @@ export class Grid{ //flat top even
      * indexesi parameter contains [strokeIndexes, filledIndexes] for grid i
      * 
      * renders a combined grid (use when DISABLEd edit mode)
+     * 
+     * @return {instance: grid, indexes: [strokeIndexes, fillIndexes]} for saving purposes of combined grid
      */
     static renderCombinedGrid(gl, grid0, grid1, grid2, indexes0, indexes1, indexes2){
         console.log("Debug RCGGGGGGGGGGGGGGGGGGGGGGGGGGG: invoked with parameters (without grid) respectively", grid0, grid1, grid2, indexes0, indexes1, indexes2);
@@ -137,6 +139,85 @@ export class Grid{ //flat top even
         Hexagon.strokeIndexData = tempStrokes;
         Hexagon.filledIndexData = tempFilleds;
         tempGrid.renderGrid(gl);
+        return {instance: tempGrid, indexes: [tempStrokes, tempFilleds]};
+    }
+    /**
+     * 
+     * @param {*} grid latest combined grid resulting
+     * @param gridIndexes [tempSIndex, tempFIndex]
+     * 
+     * Pass the parameters from return value of renderCombinedGrid
+     * 
+     * @return a string representing
+     */
+    static serialize(grid, gridIndexes){
+        let result = "";
+
+        //resulting string will contain index datas and a 2D array for each hexagon's color
+
+        let colorArr = [];
+        for(let i = 0; i < grid.grid.length; i++){
+            let currRow = [];
+            for(let j = 0; j < grid.grid[i].length; j++){
+                currRow.push(grid.grid[i][j].color);
+            }
+            colorArr.push(currRow);
+        }
+
+        result += JSON.stringify(colorArr);
+        result += "*"; //* is our delimiter for splitting when deserializing
+
+        result += JSON.stringify(gridIndexes[0]);
+        result += "*";
+        result += JSON.stringify(gridIndexes[1]);
+        result += "*";
+        result += JSON.stringify(grid.firstTopRight);
+
+        return result;
+    }
+    /**
+     * 
+     * @param {*} gridStr 
+     * @return given a string representation of grid instantiate such a grid instance and return {instance: grid, indexes: [strokeIndexes, fillIndexes]}
+     */
+    static deserialize(gridStr){
+        let tokens = gridStr.split("*");
+
+        let colorArr = JSON.parse(tokens[0]);
+        let strokeIndexes = JSON.parse(tokens[1]);
+        let fillIndexes = JSON.parse(tokens[2]);
+        let firstTopRight = JSON.parse(tokens[3]);
+
+        let grid = new Grid(colorArr.length);
+        grid.initGrid(firstTopRight);
+
+        let eltExists = function(arr, e){
+            for(let i = 0; i < arr.length; i++){
+                if(arr[i] === e){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //before returning go over the grid hexagons and set stroke enableds accordingly
+        for(let row = 0; row < grid.grid.length; row++){
+            for(let col = 0; col < grid.grid.length; col++){
+                let currHex = grid.grid[row][col];
+                let currIndex = row * grid.grid.length + col;
+
+                if(eltExists(fillIndexes, currIndex)){
+                    console.log("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+                    currHex.strokeEnabled = false;
+                    currHex.color = colorArr[row][col];
+                }
+                else{
+                    currHex.strokeEnabled = true;
+                }
+            }
+        }
+
+        return {instance: grid, indexes: [strokeIndexes, fillIndexes]};
     }
     /**
      * 

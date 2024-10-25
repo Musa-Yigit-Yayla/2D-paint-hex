@@ -356,6 +356,10 @@ let grid2 = grid.deepCopy(); //grid 2
 let indexesGrid2 = Hexagon.setIndexData(gl, grid2.grid); //NOW ALSO static Hexagon indexes are set for grid 2
 let indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
 let indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
+let indexesGridCurr = indexesGrid0; //update this along each operation namely save it into this
+
+let firstGrid = grid0, midGrid = grid1, bottomGrid = grid2;
+let firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2; //keep these in global scope for easier saving
 
 let gridOrder = [0, 1, 2]; //here grid 0 comes first (on top) grid 2 comes last
 
@@ -474,31 +478,96 @@ const cbRender = document.getElementById('cbRenderOrder');
     const value = cbRender.value;
     renderOrderSelection = parseInt(value);
 
-    let firstGrid = grid0, midGrid = grid1, bottomGrid = grid2;
-    let firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2;
+    firstGrid = grid0, midGrid = grid1, bottomGrid = grid2;
+    firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2;
 
     switch(renderOrderSelection){
-        case 123: break; //already set
+        case 123: grid = grid0; break; //already set, only assign current grid to be edited to grid0
         case 132: 
             firstGrid = grid0, midGrid = grid2, bottomGrid = grid1;
-            firstIndexes = indexesGrid0, midIndexes = indexesGrid2, bottomIndexes = indexesGrid1; break;
+            firstIndexes = indexesGrid0, midIndexes = indexesGrid2, bottomIndexes = indexesGrid1; 
+            grid = grid0; break;
         case 213:
             firstGrid = grid1, midGrid = grid0, bottomGrid = grid2;
-            firstIndexes = indexesGrid1, midIndexes = indexesGrid0, bottomIndexes = indexesGrid2; break;
+            firstIndexes = indexesGrid1, midIndexes = indexesGrid0, bottomIndexes = indexesGrid2; 
+            grid = grid1; break;
         case 231:
             firstGrid = grid1, midGrid = grid2, bottomGrid = grid0;
-            firstIndexes = indexesGrid1, midIndexes = indexesGrid2, bottomIndexes = indexesGrid0; break;
+            firstIndexes = indexesGrid1, midIndexes = indexesGrid2, bottomIndexes = indexesGrid0;
+            grid = grid1; break;
         case 312:
             firstGrid = grid2, midGrid = grid0, bottomGrid = grid1;
-            firstIndexes = indexesGrid2, midIndexes = indexesGrid0, bottomIndexes = indexesGrid1; break;
+            firstIndexes = indexesGrid2, midIndexes = indexesGrid0, bottomIndexes = indexesGrid1; 
+            grid = grid2; break;
         case 321:
             firstGrid = grid2, midGrid = grid1, bottomGrid = grid0;
-            firstIndexes = indexesGrid2, midIndexes = indexesGrid1, bottomIndexes = indexesGrid0; break;
+            firstIndexes = indexesGrid2, midIndexes = indexesGrid1, bottomIndexes = indexesGrid0; 
+            grid = grid2; break;
     }
 
+    indexesGridCurr = firstIndexes;
     //now invoke combinedRender
     Grid.renderCombinedGrid(gl, firstGrid, midGrid, bottomGrid, firstIndexes, midIndexes, bottomIndexes);
+    Hexagon.strokeIndexData = firstIndexes[0];
+    Hexagon.filledIndexData = firstIndexes[1];
   });
+
+  document.getElementById("btSave").addEventListener("click", () => {
+    const result = Grid.renderCombinedGrid(gl, firstGrid, midGrid, bottomGrid, firstIndexes, midIndexes, bottomIndexes);
+    const content = Grid.serialize(result.instance, result.indexes);
+    const blob = new Blob([content], { type: "text/plain" }); // You can change MIME type here if needed
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "example.txt"; // File name for download
+    document.body.appendChild(link); // Append link to the DOM
+
+    link.click(); // Programmatically click link to initiate download
+
+    document.body.removeChild(link); // Clean up by removing the link
+    URL.revokeObjectURL(url); // Release memory
+});
+
+document.getElementById("btLoad").addEventListener("click", () => {
+    if(loadedFile !== null){
+        let file = loadedFile[0];
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) { //this onload is thrown when the file is read completely
+            const data = Grid.deserialize(e.target.result);
+            console.log("DDDDDDDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEBBBBBBBBBBBBBBBBBBBBBBBBBBUG: data in onload is", data);
+
+            //now reset grid0, grid1, grid2 and set the currently received grid to grid0, also update static hexagon fill stroke index datas
+            grid = data.instance;
+            grid1 = new Grid(n); //grid 0
+            grid1.initGrid(firstTopRight);
+            let grid0 = grid; //copy by reference
+            let grid2 = grid1.deepCopy(); //grid 2
+
+            Hexagon.strokeIndexData = data.indexes[0];
+            Hexagon.filledIndexData = data.indexes[1];
+
+            indexesGrid2 = Hexagon.setIndexData(gl, grid2.grid); //NOW ALSO static Hexagon indexes are set for grid 2
+            indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
+            indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
+            indexesGridCurr = indexesGrid0; //update this along each operation namely save it into this
+
+            cbRender.selectedIndex = 0;  //select programmatically to rerender
+            grid.renderGrid(gl); //manual render
+        };
+
+        reader.readAsText(file); // Reads the file content as text
+    }
+});
+
+let loadedFile = null;
+document.getElementById('fileUpload').addEventListener('change', (event) => {
+    const files = event.target.files;
+    //console.log(files); // This will log a FileList containing the selected file(s)
+    loadedFile = files;
+});
 
 //removes a given element by value from the given array
 function removeByValue(array, item){
