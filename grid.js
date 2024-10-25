@@ -718,6 +718,66 @@ static findFarthestPoints(points) {
         Grid.bufferRect = gl.createBuffer();
     }
 
+    /**
+     * @param {*} n
+     * @param {*} r0 row0
+     * @param {*} c0 col0
+     * @param {*} r1 row1
+     * @param {*} c1 col1
+     * 
+     * Uses Dijkstra's algorithm on a length n grid to track the shortest path indexes between p0 and p1
+     */
+    static dijkstra(n, r0, c0, r1, c1) {
+        let startIndex = r0 * n + c0;
+        let endIndex = r1 * n + c1;
+
+        let vertexCount = n * n;
+
+        //construct adj matrix
+        let adjMatrix = [];
+
+        //init adjMatrix to all infinity
+        for(let i = 0; i < vertexCount; i++){
+            let adjRow = [];
+            for(let j = 0; j < vertexCount; j++){
+                adjRow.push(Number.MAX_VALUE);
+            }
+            adjMatrix.push(adjRow);
+        }
+        for(let i = 0; i < vertexCount; i++){
+            for(let j = 0; j < vertexCount; j++){
+                let rowI = i / n, colI = i % n;
+                let rowJ = j / n, colJ = j % n;
+
+                for(let row = rowI - 1; row < rowI + 1; row++){
+                    if(row < 0 || row === n){
+                        continue;
+                    }
+                    for(let col = colI - 1; col < colI + 1; col++){
+                        if(col < 0 || col === n || (row === rowI && col === colI)){
+                            continue;
+                        }
+                        //now we can access
+                        if(row === rowJ && col === colJ){
+                            //adjacency found
+                            adjMatrix[i][j] = 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        //adj matrix constructed now proceed
+        let vertexSet = new Set();
+        vertexSet.add(0);
+
+        for(let v = 0; v < vertexCount - 1; v++){
+            
+        }
+
+    }
+
+
     static shaders = { //shaders for drawing rectangular selection lines during selection
         vs: 
         `#version 300 es

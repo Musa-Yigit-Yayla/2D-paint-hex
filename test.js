@@ -271,6 +271,7 @@ function setEventHandlers(){
         }
         canvas.onmouseup = e => {
             console.log("Debug: currOperation yielded", currOperation);
+            //console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX e.button and undoStack redoStack are", e.button, undoStack, redoStack);
             if(e.button === 0){
                 leftMouseDown = false;
                 //add the currOperation onto the undo stack
@@ -399,7 +400,7 @@ function updateColorCanvas(){
 }
 
 function undoHandler(e){
-    console.log("Debug: undoHandler invoked");
+    console.log("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Debug: undoHandler invoked, current stacks are undo redo", undoStack, redoStack);
     
     if(undoStack.length > 0){
         let operation = undoStack.pop();
@@ -407,9 +408,10 @@ function undoHandler(e){
         grid.renderGrid(gl); //force re-render
         redoStack.push(operation); //push to the redo stack
     }
+    console.log("UUUUUU stacks after undo handler finish", undoStack, redoStack)
 }
 function redoHandler(e){
-    console.log("Debug: redoHandler invoked");
+    console.log("Debug: redoHandler invoked, current stacks are undo redo", undoStack, redoStack);
     
     if(redoStack.length > 0){
         let operation = redoStack.pop();
@@ -583,6 +585,8 @@ function removeByValue(array, item){
 //grid.renderRectSelection(gl, 0.2, 0.2, 0.8, 0.8);
 moveEnabled = true; //for testing
 setEventHandlers(); //for testing
+
+console.log("Debug: SHORTEST PATH YIELDS TEST", Grid.dijkstra(10, 0, 0, 6, 0));
 
 //Grid.renderCombinedGrid(gl, grid0, grid1, grid2, indexesGrid0, indexesGrid1);
 
