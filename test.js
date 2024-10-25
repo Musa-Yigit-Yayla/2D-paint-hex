@@ -497,7 +497,7 @@ const cbRender = document.getElementById('cbRenderOrder');
     }
 
     //now invoke combinedRender
-    Grid.renderCombinedGrid(gl, firstGrid, midGrid, bottomGrid, indexesGrid0, indexesGrid1);
+    Grid.renderCombinedGrid(gl, firstGrid, midGrid, bottomGrid, firstIndexes, midIndexes, bottomIndexes);
   });
 
 //removes a given element by value from the given array
