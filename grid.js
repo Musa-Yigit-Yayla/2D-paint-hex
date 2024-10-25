@@ -140,6 +140,58 @@ export class Grid{ //flat top even
     }
     /**
      * 
+     * @param {*} grid latest combined grid resulting
+     * @param gridIndexes [tempSIndex, tempFIndex]
+     * 
+     * Pass the parameters from return value of renderCombinedGrid
+     * 
+     * @return a string representing
+     */
+    static serialize(grid, gridIndexes){
+        let result = "";
+
+        //resulting string will contain index datas and a 2D array for each hexagon's color
+
+        let colorArr = [];
+        for(let i = 0; i < grid.grid.length; i++){
+            let currRow = [];
+            for(let j = 0; j < grid.grid[i].length; j++){
+                currRow.push(grid.grid[i][j].color);
+            }
+            colorArr.push(currRow);
+        }
+
+        result += JSON.stringify(colorArr);
+        result += "*"; //* is our delimiter for splitting when deserializing
+
+        result += JSON.stringify(gridIndexes[0]);
+        result += "*";
+        result += JSON.stringify(gridIndexes[1]);
+        result += "*";
+        result += JSON.stringify(grid.firstTopRight);
+
+        return result;
+    }
+    /**
+     * 
+     * @param {*} gridStr 
+     * @return given a string representation of grid instantiate such a grid instance and return {instance: grid, indexes: [strokeIndexes, fillIndexes]}
+     */
+    static deserialize(gridStr){
+        let tokens = gridStr.split("*");
+
+        let colorArr = JSON.parse(tokens[0]);
+        let strokeIndexes = JSON.parse(tokens[1]);
+        let fillIndexes = JSON.parse(tokens[2]);
+        let firstTopRight = JSON.parse(tokens[3]);
+
+        let grid = new Grid(colorArr.length);
+        grid.initGrid(firstTopRight);
+
+        return {instance: grid, indexes: [strokeIndexes, fillIndexes]};
+    }
+    /**
+     * 
      * @param {*} gl 
      * invoke after rendering grid to render a rectengular selection we currently have
      * x0, y0 to x1, y1 comprises a diagonal of our rectangle

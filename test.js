@@ -509,6 +509,23 @@ const cbRender = document.getElementById('cbRenderOrder');
     Hexagon.filledIndexData = firstIndexes[1];
   });
 
+  document.getElementById("btSave").addEventListener("click", () => {
+    const content = "Hello, this is the file content!";
+    const blob = new Blob([content], { type: "text/plain" }); // You can change MIME type here if needed
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "example.txt"; // File name for download
+    document.body.appendChild(link); // Append link to the DOM
+
+    link.click(); // Programmatically click link to initiate download
+
+    document.body.removeChild(link); // Clean up by removing the link
+    URL.revokeObjectURL(url); // Release memory
+});
+
+
 //removes a given element by value from the given array
 function removeByValue(array, item){
     var index = array.indexOf(item);
