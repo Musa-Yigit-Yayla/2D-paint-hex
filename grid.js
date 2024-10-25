@@ -191,6 +191,32 @@ export class Grid{ //flat top even
         let grid = new Grid(colorArr.length);
         grid.initGrid(firstTopRight);
 
+        let eltExists = function(arr, e){
+            for(let i = 0; i < arr.length; i++){
+                if(arr[i] === e){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //before returning go over the grid hexagons and set stroke enableds accordingly
+        for(let row = 0; row < grid.grid.length; row++){
+            for(let col = 0; col < grid.grid.length; col++){
+                let currHex = grid.grid[row][col];
+                let currIndex = row * grid.grid.length + col;
+
+                if(eltExists(fillIndexes, currIndex)){
+                    console.log("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");
+                    currHex.strokeEnabled = false;
+                    currHex.color = colorArr[row][col];
+                }
+                else{
+                    currHex.strokeEnabled = true;
+                }
+            }
+        }
+
         return {instance: grid, indexes: [strokeIndexes, fillIndexes]};
     }
     /**

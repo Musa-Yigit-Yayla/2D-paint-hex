@@ -536,8 +536,8 @@ document.getElementById("btLoad").addEventListener("click", () => {
         const reader = new FileReader();
 
         reader.onload = function(e) { //this onload is thrown when the file is read completely
-            console.log(e.target.result); // Logs the file contents
             const data = Grid.deserialize(e.target.result);
+            console.log("DDDDDDDDDDDDDDDDDDDDDDDDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEBBBBBBBBBBBBBBBBBBBBBBBBBBUG: data in onload is", data);
 
             //now reset grid0, grid1, grid2 and set the currently received grid to grid0, also update static hexagon fill stroke index datas
             grid = data.instance;
@@ -546,12 +546,16 @@ document.getElementById("btLoad").addEventListener("click", () => {
             let grid0 = grid; //copy by reference
             let grid2 = grid1.deepCopy(); //grid 2
 
+            Hexagon.strokeIndexData = data.indexes[0];
+            Hexagon.filledIndexData = data.indexes[1];
+
             indexesGrid2 = Hexagon.setIndexData(gl, grid2.grid); //NOW ALSO static Hexagon indexes are set for grid 2
             indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
             indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
             indexesGridCurr = indexesGrid0; //update this along each operation namely save it into this
 
             cbRender.selectedIndex = 0;  //select programmatically to rerender
+            grid.renderGrid(gl); //manual render
         };
 
         reader.readAsText(file); // Reads the file content as text
