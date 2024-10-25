@@ -244,6 +244,8 @@ export class Hexagon{
      * @param {*} grid 2d array of Hexagon instances
      * set index data for all hexagons 
      * INVOKE BEFORE INVOKING renderGrid for the first time
+     * 
+     * @return [strokeIndexes, filledIndexes]
      */
     static setIndexData(gl, grid){
         //fetch the clipspace coordinates of ALL renderable hexagons
@@ -287,6 +289,7 @@ export class Hexagon{
         
 
         console.log("Debug: upon Hexagon.setBufferData vertPosData, colorData and strokeIndexData yields respectively: ", Hexagon.vertPosData, Hexagon.colorData, Hexagon.strokeIndexData);
+        return [strokeIndexes, filledIndexes];
     }
     /**
      * 

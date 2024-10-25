@@ -13,6 +13,8 @@ canvas.addEventListener('contextmenu', function(event) {
 let leftMouseDown = false, rightMouseDown = false;
 let zoomChecked = false; //will be used to enable zoom and its event handling etc.
 let moveEnabled = false; //rect move enabled
+let editEnabled = true; //when false we will use
+let renderOrderSelection = 123;
 const ZOOM_STEP = 0.2;
 
 let currMode = 0; // 0 for brush
@@ -345,9 +347,18 @@ let n = 10;
 //Camera.setProjectionMatrix(canvas); //set the projection matrix at the beginning
 
 let firstTopRight = {x: 30, y: 30};
-let grid = new Grid(n);
+let grid = new Grid(n); //grid 0
 grid.initGrid(firstTopRight);
-Hexagon.setIndexData(gl, grid.grid);
+let grid0 = grid; //copy by reference
+let grid1 = grid.deepCopy(); //grid 1
+let grid2 = grid.deepCopy(); //grid 2
+
+let indexesGrid2 = Hexagon.setIndexData(gl, grid2.grid); //NOW ALSO static Hexagon indexes are set for grid 2
+let indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
+let indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
+
+let gridOrder = [0, 1, 2]; //here grid 0 comes first (on top) grid 2 comes last
+
 grid.renderGrid(gl);
 
 
@@ -454,7 +465,40 @@ radios.forEach(radio => {
         console.log("Debug: currMode rb is", currMode);
         setEventHandlers(); //reset event handling
     })
-})
+});
+
+const cbRender = document.getElementById('cbRenderOrder');
+
+  // Add event listener to handle change event
+  cbRender.addEventListener('change', e =>{
+    const value = cbRender.value;
+    renderOrderSelection = parseInt(value);
+
+    let firstGrid = grid0, midGrid = grid1, bottomGrid = grid2;
+    let firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2;
+
+    switch(renderOrderSelection){
+        case 123: break; //already set
+        case 132: 
+            firstGrid = grid0, midGrid = grid2, bottomGrid = grid1;
+            firstIndexes = indexesGrid0, midIndexes = indexesGrid2, bottomIndexes = indexesGrid1; break;
+        case 213:
+            firstGrid = grid1, midGrid = grid0, bottomGrid = grid2;
+            firstIndexes = indexesGrid1, midIndexes = indexesGrid0, bottomIndexes = indexesGrid2; break;
+        case 231:
+            firstGrid = grid1, midGrid = grid2, bottomGrid = grid0;
+            firstIndexes = indexesGrid1, midIndexes = indexesGrid2, bottomIndexes = indexesGrid0; break;
+        case 312:
+            firstGrid = grid2, midGrid = grid0, bottomGrid = grid1;
+            firstIndexes = indexesGrid2, midIndexes = indexesGrid0, bottomIndexes = indexesGrid1; break;
+        case 321:
+            firstGrid = grid2, midGrid = grid1, bottomGrid = grid0;
+            firstIndexes = indexesGrid2, midIndexes = indexesGrid1, bottomIndexes = indexesGrid0; break;
+    }
+
+    //now invoke combinedRender
+    Grid.renderCombinedGrid(gl, firstGrid, midGrid, bottomGrid, firstIndexes, midIndexes, bottomIndexes);
+  });
 
 //removes a given element by value from the given array
 function removeByValue(array, item){
@@ -470,6 +514,8 @@ function removeByValue(array, item){
 //grid.renderRectSelection(gl, 0.2, 0.2, 0.8, 0.8);
 moveEnabled = true; //for testing
 setEventHandlers(); //for testing
+
+//Grid.renderCombinedGrid(gl, grid0, grid1, grid2, indexesGrid0, indexesGrid1);
 
 /*Camera.position.x += 0.4;
 Camera.position.y += 0.8;
