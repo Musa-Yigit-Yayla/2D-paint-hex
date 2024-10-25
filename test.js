@@ -356,6 +356,7 @@ let grid2 = grid.deepCopy(); //grid 2
 let indexesGrid2 = Hexagon.setIndexData(gl, grid2.grid); //NOW ALSO static Hexagon indexes are set for grid 2
 let indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
 let indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
+let indexesGridCurr = indexesGrid0; //update this along each operation namely save it into this
 
 let gridOrder = [0, 1, 2]; //here grid 0 comes first (on top) grid 2 comes last
 
@@ -478,26 +479,34 @@ const cbRender = document.getElementById('cbRenderOrder');
     let firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2;
 
     switch(renderOrderSelection){
-        case 123: break; //already set
+        case 123: grid = grid0; break; //already set, only assign current grid to be edited to grid0
         case 132: 
             firstGrid = grid0, midGrid = grid2, bottomGrid = grid1;
-            firstIndexes = indexesGrid0, midIndexes = indexesGrid2, bottomIndexes = indexesGrid1; break;
+            firstIndexes = indexesGrid0, midIndexes = indexesGrid2, bottomIndexes = indexesGrid1; 
+            grid = grid0; break;
         case 213:
             firstGrid = grid1, midGrid = grid0, bottomGrid = grid2;
-            firstIndexes = indexesGrid1, midIndexes = indexesGrid0, bottomIndexes = indexesGrid2; break;
+            firstIndexes = indexesGrid1, midIndexes = indexesGrid0, bottomIndexes = indexesGrid2; 
+            grid = grid1; break;
         case 231:
             firstGrid = grid1, midGrid = grid2, bottomGrid = grid0;
-            firstIndexes = indexesGrid1, midIndexes = indexesGrid2, bottomIndexes = indexesGrid0; break;
+            firstIndexes = indexesGrid1, midIndexes = indexesGrid2, bottomIndexes = indexesGrid0;
+            grid = grid1; break;
         case 312:
             firstGrid = grid2, midGrid = grid0, bottomGrid = grid1;
-            firstIndexes = indexesGrid2, midIndexes = indexesGrid0, bottomIndexes = indexesGrid1; break;
+            firstIndexes = indexesGrid2, midIndexes = indexesGrid0, bottomIndexes = indexesGrid1; 
+            grid = grid2; break;
         case 321:
             firstGrid = grid2, midGrid = grid1, bottomGrid = grid0;
-            firstIndexes = indexesGrid2, midIndexes = indexesGrid1, bottomIndexes = indexesGrid0; break;
+            firstIndexes = indexesGrid2, midIndexes = indexesGrid1, bottomIndexes = indexesGrid0; 
+            grid = grid2; break;
     }
 
+    indexesGridCurr = firstIndexes;
     //now invoke combinedRender
     Grid.renderCombinedGrid(gl, firstGrid, midGrid, bottomGrid, firstIndexes, midIndexes, bottomIndexes);
+    Hexagon.strokeIndexData = firstIndexes[0];
+    Hexagon.filledIndexData = firstIndexes[1];
   });
 
 //removes a given element by value from the given array
