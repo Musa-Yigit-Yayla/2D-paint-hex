@@ -282,6 +282,44 @@ function setEventHandlers(){
             }
         }
     }
+    else if(currMode === 3){ //line tool
+        let startHex = null;
+        let endHex = null;
+        let startGridIndexes = null;
+        let endGridIndexes = null;
+
+
+        //rectengular selection and movement
+        canvas.onmousedown = e => {
+            let canvasX = e.x; //- boundingRect.left;
+            let canvasY = e.y; //- boundingRect.top; //in canvas coordinates
+            let gridIndexes = [];
+
+            startHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+            startGridIndexes = gridIndexes;
+        }
+        canvas.onmousemove = e => {
+            if(startHex !== null){
+                let canvasX = e.x //- boundingRect.left;
+                let canvasY = e.y //- boundingRect.top; //in canvas coordinates
+                let gridIndexes = [];
+    
+                endHex = grid.getGridEntry(canvasX, canvasY, gridIndexes);
+                endGridIndexes = gridIndexes;
+    
+                if(endHex !== null){
+                    let path = Grid.dijkstra(grid.gridLength, startGridIndexes[0], startGridIndexes[1], endGridIndexes[0], endGridIndexes[1]);
+                    
+                    //mid rerender with temp grid 
+                    Grid.renderLineTooledGrid(gl, grid, path);
+                    console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+                }
+            }
+        }
+        canvas.onmouseup = e =>{
+            
+        }
+    }
 }
 
 /**

@@ -65,6 +65,64 @@ export class Grid{ //flat top even
        //prior to rendering this ensure that you invoke your Hexagon.setBufferData for once (for the first render)
        Hexagon.renderGrid(gl, this.grid, this.brush);
     }
+
+    /**
+     * 
+     * @param {*} grid 
+     * @param {*} path 
+     * 
+     * renders an intermediate temp grid where we overwrite line tool brush to this temp grid
+     *  @return {instance: grid, indexes: [strokeIndexes, fillIndexes]} for saving purposes of temp grid
+     */
+    static renderLineTooledGrid(gl, grid, path){
+        //NOTICE WE ALREADY HAVE TOP FILLED STROKE INDEX DATA IN STATIC HEXAGON FIELDS
+
+        let tempGrid = grid.deepCopy();
+        let tempStrokes = [], tempFilleds = []; //index arrays for temp grid
+
+        let length = grid.gridLength;
+
+        let arrayContains = function(arr, e){
+            for(let i = 0; i < arr.length; i++){
+                if(arr[i] === e){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        for(let i = 0; i < length; i++){
+            for(let j = 0; j < length; j++){
+                let currIndex = i * length + j;
+                let currHex = tempGrid.grid[i][j];
+
+                if(arrayContains(path, currIndex)){
+                    //overwrite line tool brush hexagon
+                    currHex.color = grid.brush;
+                    tempFilleds.push(currIndex);
+                }
+                else if(arrayContains(Hexagon.filledIndexData, currIndex) && (!grid.grid[i][j].strokeEnabled)){
+                    //write current color just to be safe
+                    currHex.color = grid.grid[i][j].color;
+                    currHex.strokeEnabled = false;
+                }
+                else{
+                    currHex.strokeEnabled = true;
+                }
+            }
+        }
+
+        //now we need to render this tempGrid and return related data
+        //now set the static hexagon index datas and render the temp grid
+        Hexagon.strokeIndexData = tempStrokes;
+        Hexagon.filledIndexData = tempFilleds;
+        tempGrid.renderGrid(gl);
+
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! YOU MAY NEED TO RESTORE STROKE FILLED INDEX DATA OF HEXAGON BEFORE RETURNING
+        return {instance: tempGrid, indexes: [tempStrokes, tempFilleds]};
+    }
+
+
     /**
      * 
      * @param {*} grid0 the grid on top
@@ -743,12 +801,16 @@ static dijkstra(n, r0, c0, r1, c1) {
     let priorityQueue = [{ index: startIndex, distance: 0 }];
     let previous = Array(vertexCount).fill(-1);
 
-    // Directions for adjacent cells (up, down, left, right)
+    // Directions for adjacent cells (up, down, left, right, and diagonals)
     const directions = [
         [-1, 0], // Up
         [1, 0],  // Down
         [0, -1], // Left
         [0, 1],  // Right
+        [-1, -1], // Up-Left (Diagonal)
+        [-1, 1],  // Up-Right (Diagonal)
+        [1, -1],  // Down-Left (Diagonal)
+        [1, 1],   // Down-Right (Diagonal)
     ];
 
     while (priorityQueue.length > 0) {
@@ -794,6 +856,7 @@ static dijkstra(n, r0, c0, r1, c1) {
 
     return path.length > 1 && path[0] === startIndex ? path : []; // Return path if valid
 }
+
 
 
 
