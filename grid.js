@@ -74,6 +74,8 @@ export class Grid{ //flat top even
      * indexesi parameter contains [strokeIndexes, filledIndexes] for grid i
      * 
      * renders a combined grid (use when DISABLEd edit mode)
+     * 
+     * @return {instance: grid, indexes: [strokeIndexes, fillIndexes]} for saving purposes of combined grid
      */
     static renderCombinedGrid(gl, grid0, grid1, grid2, indexes0, indexes1, indexes2){
         console.log("Debug RCGGGGGGGGGGGGGGGGGGGGGGGGGGG: invoked with parameters (without grid) respectively", grid0, grid1, grid2, indexes0, indexes1, indexes2);
@@ -137,6 +139,7 @@ export class Grid{ //flat top even
         Hexagon.strokeIndexData = tempStrokes;
         Hexagon.filledIndexData = tempFilleds;
         tempGrid.renderGrid(gl);
+        return {instance: tempGrid, indexes: [tempStrokes, tempFilleds]};
     }
     /**
      * 

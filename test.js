@@ -358,6 +358,9 @@ let indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
 let indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
 let indexesGridCurr = indexesGrid0; //update this along each operation namely save it into this
 
+let firstGrid = grid0, midGrid = grid1, bottomGrid = grid2;
+let firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2; //keep these in global scope for easier saving
+
 let gridOrder = [0, 1, 2]; //here grid 0 comes first (on top) grid 2 comes last
 
 grid.renderGrid(gl);
@@ -475,8 +478,8 @@ const cbRender = document.getElementById('cbRenderOrder');
     const value = cbRender.value;
     renderOrderSelection = parseInt(value);
 
-    let firstGrid = grid0, midGrid = grid1, bottomGrid = grid2;
-    let firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2;
+    firstGrid = grid0, midGrid = grid1, bottomGrid = grid2;
+    firstIndexes = indexesGrid0, midIndexes = indexesGrid1, bottomIndexes = indexesGrid2;
 
     switch(renderOrderSelection){
         case 123: grid = grid0; break; //already set, only assign current grid to be edited to grid0
@@ -510,7 +513,8 @@ const cbRender = document.getElementById('cbRenderOrder');
   });
 
   document.getElementById("btSave").addEventListener("click", () => {
-    const content = "Hello, this is the file content!";
+    const result = Grid.renderCombinedGrid(gl, firstGrid, midGrid, bottomGrid, firstIndexes, midIndexes, bottomIndexes);
+    const content = Grid.serialize(result.instance, result.indexes);
     const blob = new Blob([content], { type: "text/plain" }); // You can change MIME type here if needed
     const url = URL.createObjectURL(blob);
 
@@ -525,6 +529,41 @@ const cbRender = document.getElementById('cbRenderOrder');
     URL.revokeObjectURL(url); // Release memory
 });
 
+document.getElementById("btLoad").addEventListener("click", () => {
+    if(loadedFile !== null){
+        let file = loadedFile[0];
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) { //this onload is thrown when the file is read completely
+            console.log(e.target.result); // Logs the file contents
+            const data = Grid.deserialize(e.target.result);
+
+            //now reset grid0, grid1, grid2 and set the currently received grid to grid0, also update static hexagon fill stroke index datas
+            grid = data.instance;
+            grid1 = new Grid(n); //grid 0
+            grid1.initGrid(firstTopRight);
+            let grid0 = grid; //copy by reference
+            let grid2 = grid1.deepCopy(); //grid 2
+
+            indexesGrid2 = Hexagon.setIndexData(gl, grid2.grid); //NOW ALSO static Hexagon indexes are set for grid 2
+            indexesGrid1 = Hexagon.setIndexData(gl, grid1.grid);
+            indexesGrid0 = Hexagon.setIndexData(gl, grid0.grid);
+            indexesGridCurr = indexesGrid0; //update this along each operation namely save it into this
+
+            cbRender.selectedIndex = 0;  //select programmatically to rerender
+        };
+
+        reader.readAsText(file); // Reads the file content as text
+    }
+});
+
+let loadedFile = null;
+document.getElementById('fileUpload').addEventListener('change', (event) => {
+    const files = event.target.files;
+    //console.log(files); // This will log a FileList containing the selected file(s)
+    loadedFile = files;
+});
 
 //removes a given element by value from the given array
 function removeByValue(array, item){
