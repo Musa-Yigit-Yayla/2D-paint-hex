@@ -586,7 +586,7 @@ function removeByValue(array, item){
 moveEnabled = true; //for testing
 setEventHandlers(); //for testing
 
-console.log("Debug: SHORTEST PATH YIELDS TEST", Grid.dijkstra(10, 0, 0, 6, 0));
+console.log("Debug: SHORTEST PATH YIELDS TEST", Grid.dijkstra(10, 0, 0, 4, 4));
 
 //Grid.renderCombinedGrid(gl, grid0, grid1, grid2, indexesGrid0, indexesGrid1);
 

@@ -718,64 +718,84 @@ static findFarthestPoints(points) {
         Grid.bufferRect = gl.createBuffer();
     }
 
-    /**
-     * @param {*} n
-     * @param {*} r0 row0
-     * @param {*} c0 col0
-     * @param {*} r1 row1
-     * @param {*} c1 col1
-     * 
-     * Uses Dijkstra's algorithm on a length n grid to track the shortest path indexes between p0 and p1
-     */
-    static dijkstra(n, r0, c0, r1, c1) {
-        let startIndex = r0 * n + c0;
-        let endIndex = r1 * n + c1;
+/**
+ * @param {*} n
+ * @param {*} r0 row0
+ * @param {*} c0 col0
+ * @param {*} r1 row1
+ * @param {*} c1 col1
+ * 
+ * Uses Dijkstra's algorithm on a length n grid to track the shortest path indexes between p0 and p1
+ */
+static dijkstra(n, r0, c0, r1, c1) {
+    let startIndex = r0 * n + c0;
+    let endIndex = r1 * n + c1;
+    let vertexCount = n * n;
 
-        let vertexCount = n * n;
+    // Distance table
+    let distances = Array(vertexCount).fill(Number.MAX_VALUE);
+    distances[startIndex] = 0;
 
-        //construct adj matrix
-        let adjMatrix = [];
+    // Track visited vertices
+    let visited = Array(vertexCount).fill(false);
+    
+    // Priority queue to get the vertex with the minimum distance
+    let priorityQueue = [{ index: startIndex, distance: 0 }];
+    let previous = Array(vertexCount).fill(-1);
 
-        //init adjMatrix to all infinity
-        for(let i = 0; i < vertexCount; i++){
-            let adjRow = [];
-            for(let j = 0; j < vertexCount; j++){
-                adjRow.push(Number.MAX_VALUE);
-            }
-            adjMatrix.push(adjRow);
-        }
-        for(let i = 0; i < vertexCount; i++){
-            for(let j = 0; j < vertexCount; j++){
-                let rowI = i / n, colI = i % n;
-                let rowJ = j / n, colJ = j % n;
+    // Directions for adjacent cells (up, down, left, right)
+    const directions = [
+        [-1, 0], // Up
+        [1, 0],  // Down
+        [0, -1], // Left
+        [0, 1],  // Right
+    ];
 
-                for(let row = rowI - 1; row < rowI + 1; row++){
-                    if(row < 0 || row === n){
-                        continue;
-                    }
-                    for(let col = colI - 1; col < colI + 1; col++){
-                        if(col < 0 || col === n || (row === rowI && col === colI)){
-                            continue;
-                        }
-                        //now we can access
-                        if(row === rowJ && col === colJ){
-                            //adjacency found
-                            adjMatrix[i][j] = 1;
-                        }
-                    }
+    while (priorityQueue.length > 0) {
+        // Sort the priority queue by distance
+        priorityQueue.sort((a, b) => a.distance - b.distance);
+        let { index: currentVertex } = priorityQueue.shift(); // Get the vertex with the smallest distance
+
+        if (currentVertex === endIndex) break; // Stop if we reached the destination
+        
+        if (visited[currentVertex]) continue; // Skip if already visited
+        visited[currentVertex] = true;
+
+        // Check the neighbors
+        let rowI = Math.floor(currentVertex / n);
+        let colI = currentVertex % n;
+
+        for (const [dRow, dCol] of directions) {
+            let newRow = rowI + dRow;
+            let newCol = colI + dCol;
+
+            // Ensure the neighbor is within bounds
+            if (newRow >= 0 && newRow < n && newCol >= 0 && newCol < n) {
+                let neighborIndex = newRow * n + newCol;
+
+                // Relaxation step
+                if (distances[currentVertex] + 1 < distances[neighborIndex]) {
+                    distances[neighborIndex] = distances[currentVertex] + 1;
+                    previous[neighborIndex] = currentVertex;
+
+                    // Add or update the neighbor in the priority queue
+                    priorityQueue.push({ index: neighborIndex, distance: distances[neighborIndex] });
                 }
             }
         }
-
-        //adj matrix constructed now proceed
-        let vertexSet = new Set();
-        vertexSet.add(0);
-
-        for(let v = 0; v < vertexCount - 1; v++){
-            
-        }
-
     }
+
+    // Reconstruct the shortest path
+    let path = [];
+    for (let at = endIndex; at !== -1; at = previous[at]) {
+        path.push(at);
+    }
+    path.reverse(); // Reverse the path to start from the beginning
+
+    return path.length > 1 && path[0] === startIndex ? path : []; // Return path if valid
+}
+
+
 
 
     static shaders = { //shaders for drawing rectangular selection lines during selection
