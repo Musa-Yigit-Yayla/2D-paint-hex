@@ -381,7 +381,7 @@ function eraseHex(hex, gridIndexes, gridRowLength){
 
 setEventHandlers();
 console.log("Debug: about to initialize grid then render a whole grid");
-let n = 10;
+let n = 15;
 
 //Camera.setProjectionMatrix(canvas); //set the projection matrix at the beginning
 
